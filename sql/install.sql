@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS `Staff`;
 
 CREATE TABLE IF NOT EXISTS `Staff` (
     `amka` VARCHAR(11) NOT NULL UNIQUE,
+    `amka` VARCHAR(11) NOT NULL UNIQUE,
     `first_name` VARCHAR(45) NOT NULL,
     `last_name` VARCHAR(45) NOT NULL,
     `date_of_birth` DATE NOT NULL,
@@ -20,11 +21,13 @@ DROP TABLE IF EXISTS `Doctor`;
 
 CREATE TABLE IF NOT EXISTS `Doctor` (
     `amka` VARCHAR(11) NOT NULL UNIQUE,
+    `amka` VARCHAR(11) NOT NULL UNIQUE,
     `license_number` INT NOT NULL UNIQUE,
     `specialty` VARCHAR(45) NOT NULL,
     `rank_level` VARCHAR(45) NOT NULL,
     `monthly_shifts_worked` INT NOT NULL,
     `consecutive_shifts` INT NOT NULL,
+    `supervisor_amka` VARCHAR(11),
     `supervisor_amka` VARCHAR(11),
     CONSTRAINT `fk_doctor_amka` FOREIGN KEY (`amka`) REFERENCES `Staff` (`amka`) ON DELETE CASCADE,
     CONSTRAINT `fk_doctor_supervisor` FOREIGN KEY (`supervisor_amka`) REFERENCES `Doctor` (`amka`) ON DELETE SET NULL
@@ -33,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `Doctor` (
 DROP TABLE IF EXISTS `Nurse`;
 
 CREATE TABLE IF NOT EXISTS `Nurse` (
+    `amka` VARCHAR(11) NOT NULL UNIQUE,
     `amka` VARCHAR(11) NOT NULL UNIQUE,
     `rank` VARCHAR(45) NOT NULL,
     `department_code` INT NOT NULL,
@@ -45,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `Nurse` (
 DROP TABLE IF EXISTS `Administrative_staff`;
 
 CREATE TABLE IF NOT EXISTS `Administrative_staff` (
+    `amka` VARCHAR(11) NOT NULL UNIQUE,
     `amka` VARCHAR(11) NOT NULL UNIQUE,
     `position` VARCHAR(45) NOT NULL,
     `office` VARCHAR(45) NOT NULL,
@@ -63,6 +68,7 @@ CREATE TABLE IF NOT EXISTS `Department` (
     `description` VARCHAR(255) NOT NULL,
     `number_of_beds` INT NOT NULL,
     `building_floor` VARCHAR(45) NOT NULL,
+    `department_head` VARCHAR(11) NOT NULL UNIQUE,
     `department_head` VARCHAR(11) NOT NULL UNIQUE,
     CONSTRAINT `fk_department_head` FOREIGN KEY (`department_head`) REFERENCES `Doctor` (`amka`) ON DELETE SET NULL,
     PRIMARY KEY (`department_code`)
@@ -83,6 +89,7 @@ DROP TABLE IF EXISTS `Hospitilization`;
 
 CREATE TABLE IF NOT EXISTS `Hospitilization` (
     `amka` VARCHAR(11) NOT NULL,
+    `amka` VARCHAR(11) NOT NULL,
     `department_code` INT NOT NULL,
     `bed_id_number` INT NOT NULL UNIQUE,
     `admission_date` DATE NOT NULL,
@@ -100,6 +107,7 @@ CREATE TABLE IF NOT EXISTS `Hospitilization` (
 DROP TABLE IF EXISTS `Patient`;
 
 CREATE TABLE IF NOT EXISTS `Patient` (
+    `amka` VARCHAR(11) NOT NULL UNIQUE,
     `amka` VARCHAR(11) NOT NULL UNIQUE,
     `first_name` VARCHAR(45) NOT NULL,
     `last_name` VARCHAR(45) NOT NULL,
