@@ -22,29 +22,48 @@ CREATE TABLE IF NOT EXISTS `Doctor` (
     `AMKA` VARCHAR(11) NOT NULL UNIQUE,
     `medical_association_license_number` VARCHAR(30) NOT NULL UNIQUE,
     `specialty` VARCHAR(45) NOT NULL,
-    `rank` VARCHAR(45) NOT NULL,
+    `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician'));,
     `monthly_shifts_worked` INT NOT NULL,
     `consecutive_shifts` INT NOT NULL,
-    `supervisor_AMKA` VARCHAR(11),
+    `supervisor_AMKA` VARCHAR(11) CHECK (`supervisor_AMKA` <> `AMKA`),
     PRIMARY KEY (`AMKA`),
     CONSTRAINT `fk_doctor_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
     CONSTRAINT `fk_doctor_supervisor` FOREIGN KEY (`supervisor_AMKA`) REFERENCES `Doctor` (`AMKA`) ON DELETE SET NULL,
-    CHECK (`rank` IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician'));
 );
 
+CREATE TRIGGER `check_rank` BEFORE INSERT OR UPDATE ON `Doctor`
+FOR EACH ROW
+BEGIN
+    IF (new.rank == 'Intern') AND (new.supervisor_AMKA IS NULL) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Intern doctors must have a supervisor.';
+    END IF;
+    IF (new.rank == 'Supervisor') AND (new.supervisor_AMKA IS NOT NULL) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Supervisor doctors cannot have a supervisor.';
+    END IF;
+END
+
+CREATE TRIGGER `check_supervision_chain` BEFORE INSERT OR UPDATE ON `Doctor`
+FOR EACH ROW
+BEGIN
+    IF(SELECT AMKA, supervisor_AMKA FROM Doctor WHERE AMKA = new.supervisor_AMKA AND supervisor_AMKA = new.AMKA) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Circular supervision chains are not allowed.';
+    END IF;
+END
 
 DROP TABLE IF EXISTS `Nurse`;
 
 CREATE TABLE IF NOT EXISTS `Nurse` (
     `AMKA` VARCHAR(11) NOT NULL UNIQUE,
-    `rank` VARCHAR(45) NOT NULL,
+    `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Assistant Nurse', 'Nurse', 'Head Nurse'));,
     `department_code` INT NOT NULL,
     `monthly_shifts_worked` INT NOT NULL,
     `consecutive_shifts` INT NOT NULL,
     PRIMARY KEY (`AMKA`),
     CONSTRAINT `fk_nurse_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
     CONSTRAINT `fk_nurse_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
-    CHECK (`rank` IN ('Assistant Nurse', 'Nurse', 'Head Nurse'));
 );
 
 DROP TABLE IF EXISTS `Administrative_staff`;
@@ -79,11 +98,10 @@ DROP TABLE IF EXISTS `Beds`;
 CREATE TABLE IF NOT EXISTS `Beds` (
     `id_number` INT NOT NULL UNIQUE AUTO_INCREMENT,
     `type` VARCHAR(45) NOT NULL,
-    `status` VARCHAR(45) NOT NULL,
+    `status` VARCHAR(45) NOT NULL CHECK (`status` IN ('Occupied', 'Available', 'Under Maintenance'));,
     `department_code` INT NOT NULL,
     PRIMARY KEY (`id_number`),
     CONSTRAINT `fk_Beds_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE,
-    CHECK (`status` IN ('Occupied', 'Available', 'Under Maintenance'));
 );
 
 DROP TABLE IF EXISTS `Hospitilization`;
@@ -133,8 +151,8 @@ CREATE TABLE IF NOT EXISTS `Patient` (
 DROP TABLE IF EXISTS `Medicine`;
 
 CREATE TABLE IF NOT EXISTS `Medicine`(
-    `ema_code` VARCHAR(45) NOT NULL UNIQUE,
-    `product_name` VARCHAR(100) NOT NULL UNIQUE,
+    `ema_code` VARCHAR(45) NOT NULL,
+    `product_name` VARCHAR(100) NOT NULL,
     `active_substance` VARCHAR(255) NOT NULL,
     `route_of_administration` VARCHAR(255) NOT NULL,
     `product_autorization_country` VARCHAR(255) NOT NULL,
@@ -144,6 +162,19 @@ CREATE TABLE IF NOT EXISTS `Medicine`(
     `pharmacovigilance_enquires_phone_number` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`ema_code`, `active_substance`)
 );
+
+CREATE TRIGGER `check_medicine` BEFORE INSERT OR UPDATE ON `Medicine`
+FOR EACH ROW
+BEGIN
+    IF EXISTS (SELECT * FROM Medicine WHERE ema_code == new.ema_code AND product_name <> new.product_name) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No two medicines can have the same EMA code but different product names.';
+    END IF;
+    IF EXISTS (SELECT * FROM Medicine WHERE ema_code <> new.ema_code AND product_name == new.product_name) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
+    END IF;
+END
 
 DROP TABLE IF EXISTS `Prescription`;
 
@@ -162,6 +193,15 @@ CREATE TABLE IF NOT EXISTS `Prescription` (
     CONSTRAINT `fk_Prescription_Doctor` FOREIGN KEY (`doctor_AMKA`) REFERENCES `Doctor` (`AMKA`)
 );
 
+CREATE TRIGGER `checks_allergies` BEFORE INSERT OR UPDATE ON `Prescription`
+FOR EACH ROW
+BEGIN
+    IF EXISTS (SELECT (SELECT medicine_ema_code FROM Allergy WHERE patient_AMKA = new.patient_AMKA)) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
+    END IF;
+END
+
 DROP TABLE IF EXISTS `Cost_Calculation`;
 
 CREATE TABLE IF NOT EXISTS `Cost_Calculation` (
@@ -169,8 +209,11 @@ CREATE TABLE IF NOT EXISTS `Cost_Calculation` (
     `base_cost` INT NOT NULL,
     `MDN` INT NOT NULL,    
     `total_cost` DECIMAL(10,2) NOT NULL,
+    `total_hospitilisation_days` INT NOT NULL,
     PRIMARY KEY (`KEN`),
 );
+
+CREATE TRIGGER `calculate_total_cost` BEFORE INSERT OR UPDATE ON `Cost_Calculation`
 
 DROP TABLE IF EXISTS `Insurance_Type`;
 
