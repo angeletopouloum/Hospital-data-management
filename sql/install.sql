@@ -28,8 +28,10 @@ CREATE TABLE IF NOT EXISTS `Doctor` (
     `supervisor_AMKA` VARCHAR(11),
     PRIMARY KEY (`AMKA`),
     CONSTRAINT `fk_doctor_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_doctor_supervisor` FOREIGN KEY (`supervisor_AMKA`) REFERENCES `Doctor` (`AMKA`) ON DELETE SET NULL
+    CONSTRAINT `fk_doctor_supervisor` FOREIGN KEY (`supervisor_AMKA`) REFERENCES `Doctor` (`AMKA`) ON DELETE SET NULL,
+    CHECK (`rank` IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician'));
 );
+
 
 DROP TABLE IF EXISTS `Nurse`;
 
@@ -41,7 +43,8 @@ CREATE TABLE IF NOT EXISTS `Nurse` (
     `consecutive_shifts` INT NOT NULL,
     PRIMARY KEY (`AMKA`),
     CONSTRAINT `fk_nurse_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_nurse_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`)
+    CONSTRAINT `fk_nurse_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
+    CHECK (`rank` IN ('Assistant Nurse', 'Nurse', 'Head Nurse'));
 );
 
 DROP TABLE IF EXISTS `Administrative_staff`;
@@ -79,7 +82,8 @@ CREATE TABLE IF NOT EXISTS `Beds` (
     `status` VARCHAR(45) NOT NULL,
     `department_code` INT NOT NULL,
     PRIMARY KEY (`id_number`),
-    CONSTRAINT `fk_Beds_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
+    CONSTRAINT `fk_Beds_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE,
+    CHECK (`status` IN ('Occupied', 'Available', 'Under Maintenance'));
 );
 
 DROP TABLE IF EXISTS `Hospitilization`;
