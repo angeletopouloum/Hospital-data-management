@@ -38,9 +38,9 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Intern doctors must have a supervisor.';
     END IF;
-    IF (new.rank == 'Supervisor') AND (new.supervisor_AMKA IS NOT NULL) THEN
+    IF (new.rank == 'Head Physician') AND (new.supervisor_AMKA IS NOT NULL) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Supervisor doctors cannot have a supervisor.';
+        SET MESSAGE_TEXT = 'Head Physicians cannot have a supervisor.';
     END IF;
 END
 
@@ -93,6 +93,22 @@ CREATE TABLE IF NOT EXISTS `Department` (
     CONSTRAINT `fk_Department_Doctor` FOREIGN KEY (`department_head`) REFERENCES `Doctor` (`AMKA`)   
 );
 
+CREATE TRIGGER `increase_bed_count` AFTER INSERT ON `Beds`
+FOR EACH ROW
+BEGIN
+    UPDATE Department
+    SET number_of_beds = number_of_beds + 1
+    WHERE department_code = new.department_code;
+END
+
+CREATE TRIGGER `decrease_bed_count` AFTER DELETE ON `Beds`
+FOR EACH ROW
+BEGIN
+    UPDATE Department
+    SET number_of_beds = number_of_beds - 1
+    WHERE department_code = old.department_code;
+END
+
 DROP TABLE IF EXISTS `Beds`;
 
 CREATE TABLE IF NOT EXISTS `Beds` (
@@ -128,6 +144,53 @@ CREATE TABLE IF NOT EXISTS `Hospitilization` (
     CONSTRAINT `fk_Hospitilization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`),
     CONSTRAINT `fk_Hospitilization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`)
 );
+
+CREATE TRIGGER `check_hospitalization_dates` BEFORE INSERT OR UPDATE ON `Hospitilization`
+FOR EACH ROW
+BEGIN
+    IF new.admission_date > new.discharge_date THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Hospitalization admission date must be before discharge date.';
+    END IF;
+END
+
+CREATE TRIGGER `check_discharge_data` BEFORE UPDATE ON `Hospitilization`
+FOR EACH ROW
+BEGIN
+    IF new.discharge_date IS NOT NULL AND old.discharge_date IS NULL THEN
+        IF new.discharge_diagnosis_ICD IS NULL OR new.discharge_diagnosis_description IS NULL THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Discharge diagnosis code and description must be provided when discharge date is set.';
+        END IF;
+    END IF;
+END
+
+CREATE TRIGGER `set_bed_occupied` AFTER INSERT ON `Hospitilization`
+FOR EACH ROW
+BEGIN
+    UPDATE Beds
+    SET status = 'Occupied'
+    WHERE id_number = new.bed_id_number;
+END
+
+CREATE TRIGGER `set_bed_available` AFTER UPDATE ON `Hospitilization`
+FOR EACH ROW
+BEGIN
+    IF new.discharge_date IS NOT NULL THEN
+        UPDATE Beds
+        SET status = 'Available'
+        WHERE id_number = new.bed_id_number;
+    END IF;
+END
+
+CREATE TRIGGER `check_bed_availability` BEFORE INSERT ON `Hospitilization`
+FOR EACH ROW
+BEGIN
+    IF (SELECT status FROM Beds where id_number = new.bed_id_number) <> 'Available' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'The selected bed is not available.';
+    END IF;
+END
 
 DROP TABLE IF EXISTS `Patient`;
 
@@ -192,6 +255,15 @@ CREATE TABLE IF NOT EXISTS `Prescription` (
     CONSTRAINT `fk_Prescription_Medicine` FOREIGN KEY (`medicine_ema_code`) REFERENCES `Medicine` (`ema_code`),
     CONSTRAINT `fk_Prescription_Doctor` FOREIGN KEY (`doctor_AMKA`) REFERENCES `Doctor` (`AMKA`)
 );
+
+CREATE TRIGGER `check_prescription_dates` BEFORE INSERT OR UPDATE ON `Prescription`
+FOR EACH ROW
+BEGIN
+    IF new.start_date < new.end_date THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
+    END IF;
+END
 
 CREATE TRIGGER `checks_allergies` BEFORE INSERT OR UPDATE ON `Prescription`
 FOR EACH ROW
