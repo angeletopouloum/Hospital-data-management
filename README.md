@@ -15,3 +15,7 @@ PROJECT ASSUMPTIONS
     https://medinelingua.info/greek/gr_environment.php
     We assume that ranks are given in English, with only the first letter of each word capitalised.
 8) We assume that a discharge date is only available to the database after the patient has been discharged.
+9) Two shifts are considered to be consecutive, if the staff memeber works for two full 8-hour shifts. 
+    We do not consider overtime to be an additional shift.
+10) Shifts are registered based on their type (e.g. 'Morning'). The start and end times are automatically
+    configured by the system.
