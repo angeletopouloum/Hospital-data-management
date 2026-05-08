@@ -26,3 +26,4 @@ PROJECT ASSUMPTIONS
     and the shift type. To be precise, morning shifts have an id of ('on_duty_id' + 1), afternoon shifts have an id of ('on_duty_id' + 2)
     and night shifts have an id of ('on_duty_id' + 3).
 13) Staff members that are on call together at the same department, share the 'on_duty_id' and 'shift_id' attributes.
+14) Only future shifts can be logged.

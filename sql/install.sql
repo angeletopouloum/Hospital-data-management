@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS `Doctor` (
     `Staff_id` INT NOT NULL UNIQUE AUTO_INCREMENT,
     `medical_association_license_number` VARCHAR(30) NOT NULL UNIQUE,
     `specialty` VARCHAR(45) NOT NULL,
-    `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician'));,
-    `monthly_shifts_worked` INT NOT NULL,
-    `consecutive_shifts` INT NOT NULL,
+    `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician')),
+    `monthly_shifts_worked` INT,
+    `consecutive_night_shifts` INT,
     `supervisor_AMKA` VARCHAR(11) CHECK (`supervisor_AMKA` <> `AMKA`),
     PRIMARY KEY (`AMKA`, `Staff_id`),
     CONSTRAINT `fk_doctor_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
@@ -39,10 +39,10 @@ DROP TABLE IF EXISTS `Nurse`;
 CREATE TABLE IF NOT EXISTS `Nurse` (
     `AMKA` VARCHAR(11) NOT NULL UNIQUE,
     `Staff_id` INT NOT NULL UNIQUE AUTO_INCREMENT,
-    `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Assistant Nurse', 'Nurse', 'Head Nurse'));,
+    `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Assistant Nurse', 'Nurse', 'Head Nurse')),
     `department_code` INT NOT NULL,
-    `monthly_shifts_worked` INT NOT NULL,
-    `consecutive_shifts` INT NOT NULL,
+    `monthly_shifts_worked` INT,
+    `consecutive_night_shifts` INT,
     PRIMARY KEY (`AMKA`, `Staff_id`),
     CONSTRAINT `fk_nurse_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
     CONSTRAINT `fk_nurse_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
@@ -57,8 +57,8 @@ CREATE TABLE IF NOT EXISTS `Administrative_staff` (
     `role` VARCHAR(45) NOT NULL,
     `office` VARCHAR(45) NOT NULL,
     `department_code` INT NOT NULL,
-    `monthly_shifts_worked` INT NOT NULL,
-    `consecutive_shifts` INT NOT NULL,
+    `monthly_shifts_worked` INT,
+    `consecutive_night_shifts` INT,
     PRIMARY KEY (`AMKA`, `Staff_id`),
     CONSTRAINT `fk_Admin_Staff` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
     CONSTRAINT `fk_Admin_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
@@ -191,43 +191,121 @@ DROP TABLE IF EXISTS `On_Duty`;
 
 CREATE TABLE IF NOT EXISTS `On_Duty` (
     `on_duty_id` INT NOT NULL AUTO_INCREMENT,
-    `start_time` TIME NOT NULL,
-    `end_time` TIME NOT NULL,
-    `start_date` DATE NOT NULL,
-    `department_code` INR NOT NULL,
-    `staff_AMKA` VARCHAR(11) NOT NULL,
-    `staff_id` INT NOT NULL,
-    PRIMARY KEY (`on_duty_id`, `staff_id`, `staff_AMKA`, `department_code`),
-    CONSTRAINT `fk_on_duty_staff` FOREIGN KEY (`staff_AMKA`, `staff_id`) REFERENCES `Staff` (`AMKA`, `Staff_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_on_duty_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
-);
-    
-DROP TABLE IF EXISTS `Shifts`;
-
-CREATE TABLE IF IF NOT EXISTS `Shifts` (
-    `shift_id` INT NOT NULL AUTO_INCREMENT,
-    `shift_type` VARCHAR(20) NOT NULL,
-    `shift_status` VARCHAR(45) NOT NULL CHECK (`shift_status` IN (\'Completed\', \'Scheduled\', \'Invalid\')),
-    `start_time` TIME NOT NULL,
-    `end_time` TIME NOT NULL,
-    `start_date` DATE NOT NULL,   
-    PRIMARY KEY (`shift_id`),
-);
-
-DROP TABLE IF EXISTS `On_Duty_has_Shifts`;
-
-CREATE TABLE IF NOT EXISTS `On_Duty_has_Shifts` (
-    `on_duty_id` INT NOT NULL,
-    `shift_id` INT NOT NULL,
     `department_code` INT NOT NULL,
     `staff_AMKA` VARCHAR(11) NOT NULL,
-    `staff_id` INT NOT NULL,     
-    PRIMARY KEY (`on_duty_id`, `shift_id`, `staff_AMKA`, `staff_id`, `department_code`),
-    CONSTRAINT `fk_on_duty_has_shifts_on_duty` FOREIGN KEY (`on_duty_id`) REFERENCES `On_Duty` (`on_duty_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_on_duty_has_shifts_shifts` FOREIGN KEY (`shift_id`) REFERENCES `Shifts` (`shift_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_on_duty_has_shifts_staff` FOREIGN KEY (`staff_AMKA`, `staff_id`) REFERENCES `Department` (`AMKA`, `Staff_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_on_duty_has_shifts_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
+    `staff_id` INT NOT NULL,
+    `shift_id` INT NOT NULL,
+    PRIMARY KEY (`on_duty_id`, `staff_id`, `staff_AMKA`, `department_code`, `shift_id`),
+    CONSTRAINT `fk_on_duty_staff` FOREIGN KEY (`staff_AMKA`, `staff_id`) REFERENCES `Staff` (`AMKA`, `Staff_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_on_duty_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE,
+    CONSTRAINT `fk_on_duty_shifts` FOREIGN KEY (`shift_id`) REFERENCES `Shifts` (`shift_id`) ON DELETE CASCADE
 );
+
+CREATE FUNCTION `calculate_shift_members` (shift_id INT) RETURN BOOLEAN
+BEGIN
+    DECLARE doctor_count INT;
+    DECLARE nurse_count INT;
+    DECLARE admin_count INT;
+
+    SELECT COUNT(*) INTO doctor_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = shift_id AND s.staff_type = 'Doctor';
+    SELECT COUNT(*) INTO nurse_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = shift_id AND s.staff_type = 'Nurse';
+    SELECT COUNT(*) INTO admin_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = shift_id AND s.staff_type = 'Administrative Staff';
+
+    IF doctor_count >= 3 AND nurse_count >= 6 AND admin_count >= 2 THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END
+
+CREATE FUNCTION `exists_senior_doctor`(shift_id INT, start_date DATE) RETURN BOOLEAN
+BEGIN
+    DECLARE senior_doctor_count INT;
+
+    SELECT COUNT(*) INTO senior_doctor_count
+    FROM On_Duty od
+    JOIN Doctor d ON od.staff_id = d.Staff_id
+    WHERE od.shift_id = shift_id AND od.start_date = start_date AND d.rank IN ('Senior Registrar', 'Head Physician');
+
+    IF senior_doctor_count >= 1 THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END
+
+
+-- CHECK IF STAFF_TYPE == DOCTOR CHECK IS REQUIRED
+CREATE FUNCTION `is_intern` (staff_id INT) RETURN BOOLEAN
+BEGIN
+      IF (SELECT doctor_rank FROM Doctor WHERE Staff_id = staff_id) = 'Intern' THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END
+
+CREATE TRIGGER `set_shift_validity` BEFORE INSERT OR UPDATE ON `Shifts`
+FOR EACH ROW
+BEGIN
+    IF CURDATE() > NEW.start_date THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Shift start date cannot be in the past.'
+    END IF;
+
+    IF calculate_shift_member(NEW.shift_id) THEN
+        SET NEW.shift_status = 'Scheduled';
+    ELSE
+        SET NEW.shift_status = 'Draft';
+    END IF;
+END
+
+CREATE TRIGGER `check_for_senior_doctor` BEFORE INSERT OR UPDATE ON `On_Duty`
+FOR EACH ROW
+BEGIN
+    IF is_intern(NEW.staff_id) THEN
+        IF NOT exists_senior_doctor(NEW.shift_id, NEW.start_date) THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.'
+        END IF;
+    END IF;
+END
+
+DROP TABLE IF EXISTS `Shifts`;
+
+CREATE TABLE IF NOT EXISTS `Shifts` (
+    `shift_id` INT NOT NULL AUTO_INCREMENT,
+    `shift_type` VARCHAR(20) NOT NULL CHECK (`shift_type` IN (\'Morning\', \'Afternoon\', \'Night\')),
+    `shift_status` VARCHAR(45) CHECK (`shift_status` IN (\'Completed\', \'Scheduled\', \'Draft\')),
+    `start_time` TIME NOT NULL,
+    `end_time` TIME NOT NULL,
+   `start_date` DATE NOT NULL,   
+    PRIMARY KEY (`shift_id`)
+);
+
+CREATE TRIGGER `check_if_shift_exists` BEFORE INSERT ON `On_Duty`
+FOR EACH ROW
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Shifts WHERE NEW.shift_id = shift_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'The shift_id provided does not correspond to an existing shift. Please insert into "Shifts" first.';
+    END IF;
+END
+
+CREATE TRIGGER `check_shift_type` BEFORE INSERT ON `On_Duty`
+FOR EACH ROW
+BEGIN
+    SET NEW.shift_type =
+        CASE 
+            WHEN HOUR(NEW.start_time) >= 7 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 15 THEN 'Morning'
+            WHEN HOUR(NEW.start_time) >= 15 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 23 THEN 'Afternoon'
+            WHEN HOUR(NEW.start_time) >= 23 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 7 THEN 'Night'
+            ELSE 
+                SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
+        END
+   
+END
 
 CREATE TRIGGER `check_if_doctor_exists` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
