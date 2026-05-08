@@ -201,76 +201,6 @@ CREATE TABLE IF NOT EXISTS `On_Duty` (
     CONSTRAINT `fk_on_duty_shifts` FOREIGN KEY (`shift_id`) REFERENCES `Shifts` (`shift_id`) ON DELETE CASCADE
 );
 
-CREATE FUNCTION `calculate_shift_members` (shift_id INT) RETURN BOOLEAN
-BEGIN
-    DECLARE doctor_count INT;
-    DECLARE nurse_count INT;
-    DECLARE admin_count INT;
-
-    SELECT COUNT(*) INTO doctor_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = shift_id AND s.staff_type = 'Doctor';
-    SELECT COUNT(*) INTO nurse_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = shift_id AND s.staff_type = 'Nurse';
-    SELECT COUNT(*) INTO admin_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = shift_id AND s.staff_type = 'Administrative Staff';
-
-    IF doctor_count >= 3 AND nurse_count >= 6 AND admin_count >= 2 THEN
-        RETURN TRUE;
-    ELSE
-        RETURN FALSE;
-    END IF;
-END
-
-CREATE FUNCTION `exists_senior_doctor`(shift_id INT, start_date DATE) RETURN BOOLEAN
-BEGIN
-    DECLARE senior_doctor_count INT;
-
-    SELECT COUNT(*) INTO senior_doctor_count
-    FROM On_Duty od
-    JOIN Doctor d ON od.staff_id = d.Staff_id
-    WHERE od.shift_id = shift_id AND od.start_date = start_date AND d.rank IN ('Senior Registrar', 'Head Physician');
-
-    IF senior_doctor_count >= 1 THEN
-        RETURN TRUE;
-    ELSE
-        RETURN FALSE;
-    END IF;
-END
-
-
--- CHECK IF STAFF_TYPE == DOCTOR CHECK IS REQUIRED
-CREATE FUNCTION `is_intern` (staff_id INT) RETURN BOOLEAN
-BEGIN
-      IF (SELECT doctor_rank FROM Doctor WHERE Staff_id = staff_id) = 'Intern' THEN
-        RETURN TRUE;
-    ELSE
-        RETURN FALSE;
-    END IF;
-END
-
-CREATE TRIGGER `set_shift_validity` BEFORE INSERT OR UPDATE ON `Shifts`
-FOR EACH ROW
-BEGIN
-    IF CURDATE() > NEW.start_date THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Shift start date cannot be in the past.'
-    END IF;
-
-    IF calculate_shift_member(NEW.shift_id) THEN
-        SET NEW.shift_status = 'Scheduled';
-    ELSE
-        SET NEW.shift_status = 'Draft';
-    END IF;
-END
-
-CREATE TRIGGER `check_for_senior_doctor` BEFORE INSERT OR UPDATE ON `On_Duty`
-FOR EACH ROW
-BEGIN
-    IF is_intern(NEW.staff_id) THEN
-        IF NOT exists_senior_doctor(NEW.shift_id, NEW.start_date) THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.'
-        END IF;
-    END IF;
-END
-
 DROP TABLE IF EXISTS `Shifts`;
 
 CREATE TABLE IF NOT EXISTS `Shifts` (
@@ -282,30 +212,6 @@ CREATE TABLE IF NOT EXISTS `Shifts` (
    `start_date` DATE NOT NULL,   
     PRIMARY KEY (`shift_id`)
 );
-
-CREATE TRIGGER `check_if_shift_exists` BEFORE INSERT ON `On_Duty`
-FOR EACH ROW
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Shifts WHERE NEW.shift_id = shift_id) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'The shift_id provided does not correspond to an existing shift. Please insert into "Shifts" first.';
-    END IF;
-END
-
-CREATE TRIGGER `check_shift_type` BEFORE INSERT ON `On_Duty`
-FOR EACH ROW
-BEGIN
-    SET NEW.shift_type =
-        CASE 
-            WHEN HOUR(NEW.start_time) >= 7 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 15 THEN 'Morning'
-            WHEN HOUR(NEW.start_time) >= 15 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 23 THEN 'Afternoon'
-            WHEN HOUR(NEW.start_time) >= 23 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 7 THEN 'Night'
-            ELSE 
-                SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
-        END
-   
-END
 
 CREATE TRIGGER `check_if_doctor_exists` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
@@ -457,4 +363,121 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
     END IF;
+END
+
+CREATE FUNCTION `calculate_shift_members` (p_shift_id INT) RETURNS TINYINT(1)
+BEGIN
+    DECLARE doctor_count INT;
+    DECLARE nurse_count INT;
+    DECLARE admin_count INT;
+
+    SELECT COUNT(*) INTO doctor_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = p_shift_id AND s.staff_type = 'Doctor';
+    SELECT COUNT(*) INTO nurse_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = p_shift_id AND s.staff_type = 'Nurse';
+    SELECT COUNT(*) INTO admin_count FROM On_Duty od JOIN Staff s ON od.staff_AMKA = s.AMKA WHERE od.shift_id = p_shift_id AND s.staff_type = 'Administrative Staff';
+
+    IF doctor_count >= 3 AND nurse_count >= 6 AND admin_count >= 2 THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END
+
+CREATE FUNCTION `exists_senior_doctor`(shift_id INT, start_date DATE) RETURNS TINYINT(1)
+BEGIN
+    DECLARE senior_doctor_count INT;
+
+    SELECT COUNT(*) INTO senior_doctor_count
+    FROM On_Duty od
+    JOIN Doctor d ON od.staff_id = d.Staff_id
+    WHERE od.shift_id = shift_id AND od.start_date = start_date AND d.rank IN ('Senior Registrar', 'Head Physician');
+
+    IF senior_doctor_count >= 1 THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END
+
+-- CHECK IF STAFF_TYPE == DOCTOR CHECK IS REQUIRED
+CREATE FUNCTION `is_intern` (staff_id INT) RETURNS TINYINT(1)
+BEGIN
+      IF (SELECT doctor_rank FROM Doctor WHERE Staff_id = staff_id) = 'Intern' THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END
+
+CREATE TRIGGER `check_for_senior_doctor` BEFORE INSERT OR UPDATE ON `On_Duty`
+FOR EACH ROW
+BEGIN
+    IF is_intern(NEW.staff_id) THEN
+        IF NOT exists_senior_doctor(NEW.shift_id, NEW.start_date) THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.'
+        END IF;
+    END IF;
+END
+
+CREATE TRIGGER `set_shift_validity` BEFORE INSERT OR UPDATE ON `Shifts`
+FOR EACH ROW
+BEGIN
+    IF CURDATE() > NEW.start_date THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Shift start date cannot be in the past.'
+    END IF;
+
+    IF calculate_shift_member(NEW.shift_id) THEN
+        SET NEW.shift_status = 'Scheduled';
+    ELSE
+        SET NEW.shift_status = 'Draft';
+    END IF;
+END
+
+CREATE TRIGGER `refresh_monthly_shifts` BEFORE INSERT OR UPDATE ON `On_Duty`
+FOR EACH ROW
+BEGIN
+    IF CURDATE()
+END
+
+CREATE TRIGGER `check_max_shifts` BEFORE INSERT OR UPDATE ON `Shifts`
+FOR EACH ROW
+BEGIN
+    IF (SELECT monthly_shifts_worked FROM Doctor WHERE Staff_id IN (SELECT staff_id FROM On_Duty WHERE shift_id = NEW.shift_id) AND staff_type = 'Doctor') == 15 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'A doctor cannot work more than 15 shifts per month.';
+    END IF;
+
+    IF (SELECT monthly_shifts_worked FROM Nurse WHERE Staff_id IN (SELECT staff_id FROM On_Duty WHERE shift_id = NEW.shift_id) AND staff_type = 'Nurse') == 20 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'A nurse cannot work more than 20 shifts per month.';
+    END IF;
+
+    IF (SELECT monthly_shifts_worked FROM Administrative_staff WHERE Staff_id IN (SELECT staff_id FROM On_Duty WHERE shift_id = NEW.shift_id) AND staff_type = 'Administrative Staff') == 25 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'An administrative staff member cannot work more than 25 shifts per month.';
+    END IF; 
+END
+
+CREATE TRIGGER `check_if_shift_exists` BEFORE INSERT ON `On_Duty`
+FOR EACH ROW
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Shifts WHERE NEW.shift_id = shift_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'The shift_id provided does not correspond to an existing shift. Please insert into "Shifts" first.';
+    END IF;
+END
+
+CREATE TRIGGER `check_shift_type` BEFORE INSERT ON `On_Duty`
+FOR EACH ROW
+BEGIN
+    SET NEW.shift_type =
+        CASE 
+            WHEN HOUR(NEW.start_time) >= 7 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 15 THEN 'Morning'
+            WHEN HOUR(NEW.start_time) >= 15 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 23 THEN 'Afternoon'
+            WHEN HOUR(NEW.start_time) >= 23 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 7 THEN 'Night'
+            ELSE 
+                SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
+        END
 END
