@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS `Staff`;
 
 CREATE TABLE IF NOT EXISTS `Staff` (
     `AMKA` VARCHAR(11) NOT NULL UNIQUE,
+    `Staff_id` INT NOT NULL UNIQUE AUTO_INCREMENT,
     `first_name` VARCHAR(45) NOT NULL,
     `last_name` VARCHAR(45) NOT NULL,
     `date_of_birth` DATE NOT NULL,
@@ -13,21 +14,23 @@ CREATE TABLE IF NOT EXISTS `Staff` (
     `phone_number` VARCHAR(12) NOT NULL,
     `hire_date` DATE NOT NULL,
     `staff_type` VARCHAR(45) NOT NULL CHECK (`staff_type` IN ('Doctor', 'Nurse', 'Administrative Staff')),
-    PRIMARY KEY (`AMKA`)
+    PRIMARY KEY (`AMKA`, `Staff_id`)
 );
 
 DROP TABLE IF EXISTS `Doctor`;
 
 CREATE TABLE IF NOT EXISTS `Doctor` (
     `AMKA` VARCHAR(11) NOT NULL UNIQUE,
+    `Staff_id` INT NOT NULL UNIQUE AUTO_INCREMENT,
     `medical_association_license_number` VARCHAR(30) NOT NULL UNIQUE,
     `specialty` VARCHAR(45) NOT NULL,
     `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician'));,
     `monthly_shifts_worked` INT NOT NULL,
     `consecutive_shifts` INT NOT NULL,
     `supervisor_AMKA` VARCHAR(11) CHECK (`supervisor_AMKA` <> `AMKA`),
-    PRIMARY KEY (`AMKA`),
+    PRIMARY KEY (`AMKA`, `Staff_id`),
     CONSTRAINT `fk_doctor_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
+    CONSTRAINT `fk_doctor_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_doctor_supervisor` FOREIGN KEY (`supervisor_AMKA`) REFERENCES `Doctor` (`AMKA`) ON DELETE SET NULL,
 );
 
@@ -35,12 +38,14 @@ DROP TABLE IF EXISTS `Nurse`;
 
 CREATE TABLE IF NOT EXISTS `Nurse` (
     `AMKA` VARCHAR(11) NOT NULL UNIQUE,
+    `Staff_id` INT NOT NULL UNIQUE AUTO_INCREMENT,
     `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Assistant Nurse', 'Nurse', 'Head Nurse'));,
     `department_code` INT NOT NULL,
     `monthly_shifts_worked` INT NOT NULL,
     `consecutive_shifts` INT NOT NULL,
-    PRIMARY KEY (`AMKA`),
+    PRIMARY KEY (`AMKA`, `Staff_id`),
     CONSTRAINT `fk_nurse_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
+    CONSTRAINT `fk_nurse_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_nurse_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
 );
 
@@ -48,13 +53,15 @@ DROP TABLE IF EXISTS `Administrative_staff`;
 
 CREATE TABLE IF NOT EXISTS `Administrative_staff` (
     `AMKA` VARCHAR(11) NOT NULL UNIQUE,
+    `Staff_id` INT NOT NULL UNIQUE AUTO_INCREMENT,
     `role` VARCHAR(45) NOT NULL,
     `office` VARCHAR(45) NOT NULL,
     `department_code` INT NOT NULL,
     `monthly_shifts_worked` INT NOT NULL,
     `consecutive_shifts` INT NOT NULL,
-    PRIMARY KEY (`AMKA`),
+    PRIMARY KEY (`AMKA`, `Staff_id`),
     CONSTRAINT `fk_Admin_Staff` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
+    CONSTRAINT `fk_Admin_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_Administrator_Department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`)
 );
 
@@ -193,6 +200,16 @@ CREATE TABLE IF NOT EXISTS `On_Duty` (
     CONSTRAINT `fk_on_duty_administrative_staff_AMKA` FOREIGN KEY (`administrative_staff_AMKA`) REFERENCES `Administrative_staff` (`AMKA`) ON DELETE CASCADE,
     CONSTRAINT `fk_on_duty_nurse_AMKA` FOREIGN KEY (`nurse_AMKA`) REFERENCES `Nurse` (`AMKA`) ON DELETE CASCADE,
     CONSTRAINT `fk_on_duty_doctor_AMKA` FOREIGN KEY (`doctor_AMKA`) REFERENCES `Doctor` (`AMKA`) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS `Shifts`
+
+CREATE TABLE IF IF NOT EXISTS `Shifts` (
+    `shift_id` INT NOT NULL AUTO_INCREMENT,
+    `type` VARCHAR(15) NOT NULL,
+    ``
+    PRIMARY KEY (`shift_id`),
+    CONSTRAINT `fk_shifts_department_code` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
 );
 
 CREATE TRIGGER `check_if_doctor_exists` BEFORE INSERT ON `Doctor`
