@@ -190,26 +190,43 @@ CREATE TABLE IF NOT EXISTS `Insurance_Type`(
 DROP TABLE IF EXISTS `On_Duty`;
 
 CREATE TABLE IF NOT EXISTS `On_Duty` (
-    `department_code` INT NOT NULL,
-    `administrative_staff_AMKA` VARCHAR(11) NOT NULL UNIQUE,
-    `nurse_AMKA` VARCHAR(11) NOT NULL UNIQUE,
-    `doctor_AMKA` VARCHAR(11) NOT NULL UNIQUE,
-    `date` DATE NOT NULL,
-    `shift` VARCHAR(45) NOT NULL,
-    PRIMARY KEY (`administrative_staff_AMKA`, `date`, `shift`),
-    CONSTRAINT `fk_on_duty_administrative_staff_AMKA` FOREIGN KEY (`administrative_staff_AMKA`) REFERENCES `Administrative_staff` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_on_duty_nurse_AMKA` FOREIGN KEY (`nurse_AMKA`) REFERENCES `Nurse` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_on_duty_doctor_AMKA` FOREIGN KEY (`doctor_AMKA`) REFERENCES `Doctor` (`AMKA`) ON DELETE CASCADE
+    `on_duty_id` INT NOT NULL AUTO_INCREMENT,
+    `start_time` TIME NOT NULL,
+    `end_time` TIME NOT NULL,
+    `start_date` DATE NOT NULL,
+    `department_code` INR NOT NULL,
+    `staff_AMKA` VARCHAR(11) NOT NULL,
+    `staff_id` INT NOT NULL,
+    PRIMARY KEY (`on_duty_id`, `staff_id`, `staff_AMKA`, `department_code`),
+    CONSTRAINT `fk_on_duty_staff` FOREIGN KEY (`staff_AMKA`, `staff_id`) REFERENCES `Staff` (`AMKA`, `Staff_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_on_duty_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
 );
-
-DROP TABLE IF EXISTS `Shifts`
+    
+DROP TABLE IF EXISTS `Shifts`;
 
 CREATE TABLE IF IF NOT EXISTS `Shifts` (
     `shift_id` INT NOT NULL AUTO_INCREMENT,
-    `type` VARCHAR(15) NOT NULL,
-    ``
+    `shift_type` VARCHAR(20) NOT NULL,
+    `shift_status` VARCHAR(45) NOT NULL CHECK (`shift_status` IN (\'Completed\', \'Scheduled\', \'Invalid\')),
+    `start_time` TIME NOT NULL,
+    `end_time` TIME NOT NULL,
+    `start_date` DATE NOT NULL,   
     PRIMARY KEY (`shift_id`),
-    CONSTRAINT `fk_shifts_department_code` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS `On_Duty_has_Shifts`;
+
+CREATE TABLE IF NOT EXISTS `On_Duty_has_Shifts` (
+    `on_duty_id` INT NOT NULL,
+    `shift_id` INT NOT NULL,
+    `department_code` INT NOT NULL,
+    `staff_AMKA` VARCHAR(11) NOT NULL,
+    `staff_id` INT NOT NULL,     
+    PRIMARY KEY (`on_duty_id`, `shift_id`, `staff_AMKA`, `staff_id`, `department_code`),
+    CONSTRAINT `fk_on_duty_has_shifts_on_duty` FOREIGN KEY (`on_duty_id`) REFERENCES `On_Duty` (`on_duty_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_on_duty_has_shifts_shifts` FOREIGN KEY (`shift_id`) REFERENCES `Shifts` (`shift_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_on_duty_has_shifts_staff` FOREIGN KEY (`staff_AMKA`, `staff_id`) REFERENCES `Department` (`AMKA`, `Staff_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_on_duty_has_shifts_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
 );
 
 CREATE TRIGGER `check_if_doctor_exists` BEFORE INSERT ON `Doctor`
