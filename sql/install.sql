@@ -217,8 +217,8 @@ CREATE TRIGGER `check_if_doctor_exists` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Staff WHERE AMKA = new.AMKA AND staff_type = 'Doctor') THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
     END IF;
 END;
 
@@ -226,8 +226,8 @@ CREATE TRIGGER `check_if_nurse_exists` BEFORE INSERT ON `Nurse`
 FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Staff WHERE AMKA = new.AMKA AND staff_type = 'Nurse') THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
     END IF;
 END;
 
@@ -235,8 +235,8 @@ CREATE TRIGGER `check_if_admin_exists` BEFORE INSERT ON `Administrative_staff`
 FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Staff WHERE AMKA = new.AMKA AND staff_type = 'Administrative Staff') THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
     END IF;
 END;
 
@@ -244,8 +244,8 @@ CREATE TRIGGER `check_is_intern_supervisor` BEFORE DELETE ON `Doctor`
 FOR EACH ROW
 BEGIN
     IF EXISTS (SELECT * FROM Doctor WHERE supervisor_AMKA = old.AMKA AND rank = 'Inter') THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Cannot delete a doctor who supervises an intern. Please change the Intern"s supervisor first.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Cannot delete a doctor who supervises an intern. Please change the Intern"s supervisor first.';
     END IF;
 END
 
@@ -253,12 +253,12 @@ CREATE TRIGGER `check_rank` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
 BEGIN
     IF (new.rank = 'Intern') AND (new.supervisor_AMKA IS NULL) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Intern doctors must have a supervisor.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Intern doctors must have a supervisor.';
     END IF;
     IF (new.rank = 'Head Physician') AND (new.supervisor_AMKA IS NOT NULL) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Head Physicians cannot have a supervisor.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Head Physicians cannot have a supervisor.';
     END IF;
 END
 
@@ -266,12 +266,12 @@ CREATE TRIGGER `check_rank` BEFORE UPDATE ON `Doctor`
 FOR EACH ROW
 BEGIN
     IF (new.rank = 'Intern') AND (new.supervisor_AMKA IS NULL) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Intern doctors must have a supervisor.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Intern doctors must have a supervisor.';
     END IF;
     IF (new.rank = 'Head Physician') AND (new.supervisor_AMKA IS NOT NULL) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Head Physicians cannot have a supervisor.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Head Physicians cannot have a supervisor.';
     END IF;
 END
 
@@ -279,8 +279,8 @@ CREATE TRIGGER `check_supervision_chain` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
 BEGIN
     IF(SELECT AMKA, supervisor_AMKA FROM Doctor WHERE AMKA = new.supervisor_AMKA AND supervisor_AMKA = new.AMKA) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Circular supervision chains are not allowed.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Circular supervision chains are not allowed.';
     END IF;
 END
 
@@ -288,8 +288,8 @@ CREATE TRIGGER `check_supervision_chain` BEFORE UPDATE ON `Doctor`
 FOR EACH ROW
 BEGIN
     IF(SELECT AMKA, supervisor_AMKA FROM Doctor WHERE AMKA = new.supervisor_AMKA AND supervisor_AMKA = new.AMKA) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Circular supervision chains are not allowed.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Circular supervision chains are not allowed.';
     END IF;
 END
 
@@ -314,8 +314,8 @@ CREATE TRIGGER `check_hospitalization_dates` BEFORE INSERT ON `Hospitilization`
 FOR EACH ROW
 BEGIN
     IF new.admission_date > new.discharge_date THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Hospitalization admission date must be before discharge date.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Hospitalization admission date must be before discharge date.';
     END IF;
 END
 
@@ -323,8 +323,8 @@ CREATE TRIGGER `check_hospitalization_dates` BEFORE UPDATE ON `Hospitilization`
 FOR EACH ROW
 BEGIN
     IF new.admission_date > new.discharge_date THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Hospitalization admission date must be before discharge date.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Hospitalization admission date must be before discharge date.';
     END IF;
 END
 
@@ -333,8 +333,8 @@ FOR EACH ROW
 BEGIN
     IF new.discharge_date IS NOT NULL AND old.discharge_date IS NULL THEN
         IF new.discharge_diagnosis_ICD IS NULL OR new.discharge_diagnosis_description IS NULL THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Discharge diagnosis code and description must be provided when discharge date is set.';
+            SIGNAL SQLSTATE '45000';
+                SET MESSAGE_TEXT = 'Discharge diagnosis code and description must be provided when discharge date is set.';
         END IF;
     END IF;
 END
@@ -361,8 +361,8 @@ CREATE TRIGGER `check_bed_availability` BEFORE INSERT ON `Hospitilization`
 FOR EACH ROW
 BEGIN
     IF (SELECT status FROM Beds where id_number = new.bed_id_number) <> 'Available' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'The selected bed is not available.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'The selected bed is not available.';
     END IF;
 END
 
@@ -370,12 +370,12 @@ CREATE TRIGGER `check_medicine` BEFORE UPDATE ON `Medicine`
 FOR EACH ROW
 BEGIN
     IF EXISTS (SELECT * FROM Medicine WHERE ema_code = new.ema_code AND product_name <> new.product_name) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No two medicines can have the same EMA code but different product names.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'No two medicines can have the same EMA code but different product names.';
     END IF;
     IF EXISTS (SELECT * FROM Medicine WHERE ema_code <> new.ema_code AND product_name = new.product_name) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
     END IF;
 END
 
@@ -383,12 +383,12 @@ CREATE TRIGGER `check_medicine` BEFORE INSERT ON `Medicine`
 FOR EACH ROW
 BEGIN
     IF EXISTS (SELECT * FROM Medicine WHERE ema_code = new.ema_code AND product_name <> new.product_name) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No two medicines can have the same EMA code but different product names.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'No two medicines can have the same EMA code but different product names.';
     END IF;
     IF EXISTS (SELECT * FROM Medicine WHERE ema_code <> new.ema_code AND product_name = new.product_name) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
     END IF;
 END
 
@@ -396,8 +396,8 @@ CREATE TRIGGER `check_prescription_dates` BEFORE UPDATE ON `Prescription`
 FOR EACH ROW
 BEGIN
     IF new.start_date > new.end_date THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
     END IF;
 END
 
@@ -405,8 +405,8 @@ CREATE TRIGGER `check_prescription_dates` BEFORE INSERT ON `Prescription`
 FOR EACH ROW
 BEGIN
     IF new.start_date > new.end_date THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
     END IF;
 END
 
@@ -414,8 +414,8 @@ CREATE TRIGGER `check_allergies` BEFORE UPDATE ON `Prescription`
 FOR EACH ROW
 BEGIN
     IF EXISTS (SELECT (SELECT medicine_ema_code FROM Allergy WHERE patient_AMKA = new.patient_AMKA)) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
     END IF;
 END
 
@@ -423,8 +423,8 @@ CREATE TRIGGER `check_allergies` BEFORE INSERT ON `Prescription`
 FOR EACH ROW
 BEGIN
     IF EXISTS (SELECT (SELECT medicine_ema_code FROM Allergy WHERE patient_AMKA = new.patient_AMKA)) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
     END IF;
 END
 
@@ -476,8 +476,8 @@ FOR EACH ROW
 BEGIN
     IF is_intern(NEW.staff_id) THEN
         IF NOT exists_senior_doctor(NEW.start_time, NEW.start_date) THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
+            SIGNAL SQLSTATE '45000';
+                SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
         END IF;
     END IF;
 END
@@ -487,18 +487,18 @@ FOR EACH ROW
 BEGIN
     IF is_intern(NEW.staff_id) THEN
         IF NOT exists_senior_doctor(NEW.start_time, NEW.start_date) THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
+            SIGNAL SQLSTATE '45000';
+                SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
         END IF;
     END IF;
 END
 
-CREATE TRIGGER `set_shift_validity` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER `set_shift_validity_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
     IF CURDATE() > NEW.start_date THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Shift start date cannot be in the past.'
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Shift start date cannot be in the past.';
     END IF;
 
     IF calculate_shift_members(NEW.start_time, NEW.start_date) THEN
@@ -508,12 +508,12 @@ BEGIN
     END IF;
 END
 
-CREATE TRIGGER `set_shift_validity` BEFORE UPDATE ON `Shifts`
+CREATE TRIGGER `set_shift_validity_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
 BEGIN
     IF CURDATE() > NEW.start_date THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Shift start date cannot be in the past.'
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'Shift start date cannot be in the past.';
     END IF;
 
     IF calculate_shift_members(NEW.start_time, NEW.start_date) THEN
@@ -523,160 +523,211 @@ BEGIN
     END IF;
 END
 
-CREATE TRIGGER `check_max_shifts` BEFORE UPDATE ON `Shifts`
+CREATE TRIGGER `check_max_shifts_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
 BEGIN
-    IF (SELECT monthly_shifts_worked FROM Doctor WHERE Staff_id = NEW.staff_id) = 15 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'A doctor cannot work more than 15 shifts per month.';
-    END IF;
-
-    IF (SELECT monthly_shifts_worked FROM Nurse WHERE Staff_id = NEW.staff_id) = 20 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'A nurse cannot work more than 20 shifts per month.';
-    END IF;
-
-    IF (SELECT monthly_shifts_worked FROM Administrative_staff WHERE Staff_id = NEW.staff_id) = 25 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'An administrative staff member cannot work more than 25 shifts per month.';
-    END IF; 
+    DECLARE s_type VARCHAR(45);
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    CASE
+        WHEN s_type = 'Doctor' THEN
+            IF (SELECT monthly_shifts_worked FROM Doctor WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 15 THEN
+                SIGNAL SQLSTATE '45000';
+                    SET MESSAGE_TEXT = 'A doctor cannot work more than 15 shifts per month.';
+            END IF;
+        WHEN s_type = 'Nurse' THEN
+            IF (SELECT monthly_shifts_worked FROM Nurse WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 20 THEN
+                SIGNAL SQLSTATE '45000';
+                    SET MESSAGE_TEXT = 'A nurse cannot work more than 20 shifts per month.';
+            END IF;
+        WHEN s_type = 'Administrative Staff' THEN
+            IF (SELECT monthly_shifts_worked FROM Administrative_staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 25 THEN
+                SIGNAL SQLSTATE '45000';
+                    SET MESSAGE_TEXT = 'An administrative staff member cannot work more than 25 shifts per month.';
+            END IF; 
+    CASE END;    
 END
 
-CREATE TRIGGER `check_max_shifts` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER `check_max_shifts_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
-    IF (SELECT monthly_shifts_worked FROM Doctor WHERE Staff_id = NEW.staff_id) = 15 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'A doctor cannot work more than 15 shifts per month.';
-    END IF;
-
-    IF (SELECT monthly_shifts_worked FROM Nurse WHERE Staff_id = NEW.staff_id) = 20 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'A nurse cannot work more than 20 shifts per month.';
-    END IF;
-
-    IF (SELECT monthly_shifts_worked FROM Administrative_staff WHERE Staff_id = NEW.staff_id) = 25 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'An administrative staff member cannot work more than 25 shifts per month.';
-    END IF; 
+    DECLARE s_type VARCHAR(45);
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    CASE
+        WHEN s_type = 'Doctor' THEN
+            IF (SELECT monthly_shifts_worked FROM Doctor WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 15 THEN
+                SIGNAL SQLSTATE '45000';
+                    SET MESSAGE_TEXT = 'A doctor cannot work more than 15 shifts per month.';
+            END IF;
+        WHEN s_type = 'Nurse' THEN
+            IF (SELECT monthly_shifts_worked FROM Nurse WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 20 THEN
+                SIGNAL SQLSTATE '45000';
+                    SET MESSAGE_TEXT = 'A nurse cannot work more than 20 shifts per month.';
+            END IF;
+        WHEN s_type = 'Administrative Staff' THEN
+            IF (SELECT monthly_shifts_worked FROM Administrative_staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 25 THEN
+                SIGNAL SQLSTATE '45000';
+                    SET MESSAGE_TEXT = 'An administrative staff member cannot work more than 25 shifts per month.';
+            END IF; 
+    CASE END;   
 END
 
 CREATE TRIGGER `check_if_shift_exists` BEFORE INSERT ON `On_Duty`
 FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Shifts WHERE NEW.shift_id = shift_id) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'The shift_id provided does not correspond to an existing shift. Please insert into "Shifts" first.';
+        SIGNAL SQLSTATE '45000';
+            SET MESSAGE_TEXT = 'The shift_id provided does not correspond to an existing shift. Please insert into "Shifts" first.';
     END IF;
 END
 
-CREATE TRIGGER `check_shift_type` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER `check_shift_type_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
-    SET NEW.shift_type =
-        CASE 
-            WHEN HOUR(NEW.start_time) >= 7 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 15 THEN 'Morning'
-            WHEN HOUR(NEW.start_time) >= 15 AND MINUTE(NEW.start_time) >= 1 AND HOUR(NEW.start_time) <= 23 THEN 'Afternoon'
-            ELSE 'Night'                
-        END
+    IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
+        SET NEW.shift_type = 'Morning';
+    ELSEIF HOUR(NEW.start_time) >= 15 AND HOUR(NEW.start_time) < 23 THEN
+        SET NEW.shift_type = 'Afternoon';
+    ELSEIF HOUR(NEW.start_time) = 23 OR HOUR(NEW.start_time) < 7 THEN
+        SET NEW.shift_type = 'Night';
+    ELSE
+        SIGNAL SQLSTATE '45000';
+                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
+    END IF;
+END
 
-        IF (SELECT shift_type FROM Shifts WHERE shift_id = NEW.shift_id) NOT IN ('Moring', 'Afternoon', 'Night') THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
-        END
+CREATE TRIGGER `check_shift_type_upd` BEFORE UPDATE ON `Shifts`
+FOR EACH ROW
+BEGIN
+    IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
+        SET NEW.shift_type = 'Morning';
+    ELSEIF HOUR(NEW.start_time) >= 15 AND HOUR(NEW.start_time) < 23 THEN
+        SET NEW.shift_type = 'Afternoon';
+    ELSEIF HOUR(NEW.start_time) = 23 OR HOUR(NEW.start_time) < 7 THEN
+        SET NEW.shift_type = 'Night';
+    ELSE
+        SIGNAL SQLSTATE '45000';
+                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
+    END IF;
 END
 
 CREATE TRIGGER `update_shifts` AFTER INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
     DECLARE s_type VARCHAR(45);
-    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id; 
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA; 
 
-    IF (SELECT shift_status FROM Shifts WHERE shift_id = NEW.shift_id) = 'Scheduled'
+    IF (SELECT shift_status FROM Shifts WHERE shift_id = NEW.shift_id) = 'Scheduled' THEN
         IF s_type = 'Doctor' THEN
             UPDATE Doctor
-            SET monthly_shifts_worked = ISNULL(monthly_shifts_worked, 0) + 1
+            SET monthly_shifts_worked = IFNULL(monthly_shifts_worked, 0) + 1,
                 consecutive_night_shifts = 
                     CASE WHEN NEW.shift_type = 'Night' 
                         THEN IFNULL(consecutive_night_shifts, 0) + 1
                         ELSE 0
-                    END
-            WHERE staff_id = NEW.staff_id 
+                    CASE END;
+            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         ELSEIF s_type = 'Nurse' THEN
             UPDATE Nurse
-            SET monthly_shifts_worked = ISNULL(monthly_shifts_worked, 0) + 1
+            SET monthly_shifts_worked = IFNULL(monthly_shifts_worked, 0) + 1,
                 consecutive_night_shifts = 
                     CASE WHEN NEW.shift_type = 'Night' 
                         THEN IFNULL(consecutive_night_shifts, 0) + 1
                         ELSE 0
-                    END
-            WHERE staff_id = NEW.staff_id 
+                    CASE END;
+            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         ELSEIF s_type = 'Administrative Staff' THEN
-            UPDATE Administrative Staff
-            SET monthly_shifts_worked = ISNULL(monthly_shifts_worked, 0) + 1
+            UPDATE Administrative_Staff
+            SET monthly_shifts_worked = IFNULL(monthly_shifts_worked, 0) + 1,
                 consecutive_night_shifts = 
                     CASE WHEN NEW.shift_type = 'Night' 
                         THEN IFNULL(consecutive_night_shifts, 0) + 1
                         ELSE 0
-                    END
-            WHERE staff_id = NEW.staff_id
+                    CASE END;
+            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         END IF; 
     END IF;
 END
 
-CREATE TRIGGER `check_consecutive_shifts` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER `check_consecutive_shifts_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
     DECLARE last_shift DATETIME;
 
-    SELECT TIMESTAMP(start_date, end_time) INTO last_shift FROM Shifts WHERE staff_id = NEW.staff_id AND TIMESTAMP(start_date, end_time) < TIMESTAMP(NEW.start_date, new.end_date) ORDER BY TIMESTAMP(start_date, end_time) DESC LIMIT 1;
+    SELECT TIMESTAMP(start_date, end_time) INTO last_shift FROM Shifts WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA AND TIMESTAMP(start_date, end_time) < TIMESTAMP(NEW.start_date, NEW.start_time) ORDER BY TIMESTAMP(start_date, end_time) DESC LIMIT 1;
 
     IF last_shift IS NOT NULL THEN
-        IF TIMESTAMPDIFF(HOUR, last_shift, TIMESTAMP(NEW.start_date, NEW.end_time)) < 8 THEN:
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.'
+        IF TIMESTAMPDIFF(HOUR, last_shift, TIMESTAMP(NEW.start_date, NEW.end_time)) < 8 THEN
+            SIGNAL SQLSTATE '45000';
+                SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.';
         END IF;
     END IF;
 END
 
-CREATE TRIGGER `check_consecutive_shifts` BEFORE UPDATE ON `Shifts`
+CREATE TRIGGER `check_consecutive_shifts_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
 BEGIN
     DECLARE last_shift DATETIME;
 
-    SELECT TIMESTAMP(start_date, end_time) INTO last_shift FROM Shifts WHERE staff_id = NEW.staff_id AND TIMESTAMP(start_date, end_time) < TIMESTAMP(NEW.start_date, new.end_date) ORDER BY TIMESTAMP(start_date, end_time) DESC LIMIT 1;
+    SELECT TIMESTAMP(start_date, end_time) INTO last_shift FROM Shifts WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA AND shift_id <> NEW.shift_id AND TIMESTAMP(start_date, end_time) < TIMESTAMP(NEW.start_date, NEW.end_time) ORDER BY TIMESTAMP(start_date, end_time) DESC LIMIT 1;
 
     IF last_shift IS NOT NULL THEN
-        IF TIMESTAMPDIFF(HOUR, last_shift, TIMESTAMP(NEW.start_date, NEW.end_time)) < 8 THEN:
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.'
+        IF TIMESTAMPDIFF(HOUR, last_shift, TIMESTAMP(NEW.start_date, NEW.end_time)) < 8 THEN
+            SIGNAL SQLSTATE '45000';
+                SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.';
         END IF;
     END IF;
 END
 
-CREATE TRIGGER `check_night_shift_validity` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER `check_night_shift_validity_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
     DECLARE s_type VARCHAR(45);
-    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id;
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
     
     IF NEW.shift_type = 'Night' THEN
         CASE
-            WHERE s_type = 'Doctor' THEN 
-                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id) = 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = "Doctors cannot work more than 3 consecutive night shifts."
+            WHEN s_type = 'Doctor' THEN 
+                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000';
+                        SET MESSAGE_TEXT = 'Doctors cannot work more than 3 consecutive night shifts.';
                 END IF;
-            WHERE s_type = 'Nurse' THEN
-                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id) = 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = "Doctors cannot work more than 3 consecutive night shifts."
+            WHEN s_type = 'Nurse' THEN
+                IF (SELECT consecutive_night_shifts FROM Nurse WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000';
+                        SET MESSAGE_TEXT = 'Nurses cannot work more than 3 consecutive night shifts.';
                 END IF;
-            ELSE
-                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id) = 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = "Doctors cannot work more than 3 consecutive night shifts."
+            WHEN s_type = 'Administrative Staff' THEN
+                IF (SELECT consecutive_night_shifts FROM Administrative_Staff WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000';
+                        SET MESSAGE_TEXT = 'Administrative Staff cannot work more than 3 consecutive night shifts.';
                 END IF;
-        END
+        CASE END;
+    END IF;    
+END
+
+CREATE TRIGGER `check_night_shift_validity_upd` BEFORE UPDATE ON `Shifts`
+FOR EACH ROW
+BEGIN
+    DECLARE s_type VARCHAR(45);
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    
+    IF NEW.shift_type = 'Night' THEN
+        CASE
+            WHEN s_type = 'Doctor' THEN 
+                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000';
+                        SET MESSAGE_TEXT = 'Doctors cannot work more than 3 consecutive night shifts.';
+                END IF;
+            WHEN s_type = 'Nurse' THEN
+                IF (SELECT consecutive_night_shifts FROM Nurse WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000';
+                        SET MESSAGE_TEXT = 'Nurses cannot work more than 3 consecutive night shifts.';
+                END IF;
+            WHEN s_type = 'Administrative Staff' THEN
+                IF (SELECT consecutive_night_shifts FROM Administrative_Staff WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000';
+                        SET MESSAGE_TEXT = 'Administrative Staff cannot work more than 3 consecutive night shifts.';
+                END IF;
+        CASE END;
     END IF;    
 END

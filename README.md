@@ -27,3 +27,4 @@ PROJECT ASSUMPTIONS
     and night shifts have an id of ('on_duty_id' + 3).
 13) Staff members that are on call together at the same department, share the 'on_duty_id' and 'shift_id' attributes.
 14) Only future shifts can be logged.
+15) Shift hours have values in the range [0, 23].
