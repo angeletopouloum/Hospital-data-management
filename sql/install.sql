@@ -471,24 +471,24 @@ BEGIN
     END IF;
 END
 
-CREATE TRIGGER `check_for_senior_doctor` BEFORE UPDATE ON `Shifts`
+CREATE TRIGGER `check_for_senior_doctor_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
 BEGIN
     IF is_intern(NEW.staff_id) THEN
         IF NOT exists_senior_doctor(NEW.start_time, NEW.start_date) THEN
             SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.'
+            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
         END IF;
     END IF;
 END
 
-CREATE TRIGGER `check_for_senior_doctor` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER `check_for_senior_doctor_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
     IF is_intern(NEW.staff_id) THEN
         IF NOT exists_senior_doctor(NEW.start_time, NEW.start_date) THEN
             SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.'
+            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
         END IF;
     END IF;
 END
@@ -521,12 +521,6 @@ BEGIN
     ELSE
         SET NEW.shift_status = 'Draft';
     END IF;
-END
-
-CREATE TRIGGER `refresh_monthly_shifts` BEFORE INSERT OR UPDATE ON `Shifts`
-FOR EACH ROW
-BEGIN
-    
 END
 
 CREATE TRIGGER `check_max_shifts` BEFORE UPDATE ON `Shifts`
@@ -595,21 +589,94 @@ END
 CREATE TRIGGER `update_shifts` AFTER INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
+    DECLARE s_type VARCHAR(45);
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id; 
+
     IF (SELECT shift_status FROM Shifts WHERE shift_id = NEW.shift_id) = 'Scheduled'
-        IF (SELECT staff_type FROM Staff WHERE Staff_id = NEW.staff_id) = 'Doctor' THEN
+        IF s_type = 'Doctor' THEN
             UPDATE Doctor
-            SET monthly_shifts_worked = monthly_shifts_worked + 1
-            WHERE staff_id = NEW.staff_id
-        END IF; 
-        IF (SELECT staff_type FROM Staff WHERE Staff_id = NEW.staff_id) = 'Nurse' THEN
+            SET monthly_shifts_worked = ISNULL(monthly_shifts_worked, 0) + 1
+                consecutive_night_shifts = 
+                    CASE WHEN NEW.shift_type = 'Night' 
+                        THEN IFNULL(consecutive_night_shifts, 0) + 1
+                        ELSE 0
+                    END
+            WHERE staff_id = NEW.staff_id 
+        ELSEIF s_type = 'Nurse' THEN
             UPDATE Nurse
-            SET monthly_shifts_worked = monthly_shifts_worked + 1
-            WHERE staff_id = NEW.staff_id
-        END IF; 
-        IF (SELECT staff_type FROM Staff WHERE Staff_id = NEW.staff_id) = 'Administrative Staff' THEN
+            SET monthly_shifts_worked = ISNULL(monthly_shifts_worked, 0) + 1
+                consecutive_night_shifts = 
+                    CASE WHEN NEW.shift_type = 'Night' 
+                        THEN IFNULL(consecutive_night_shifts, 0) + 1
+                        ELSE 0
+                    END
+            WHERE staff_id = NEW.staff_id 
+        ELSEIF s_type = 'Administrative Staff' THEN
             UPDATE Administrative Staff
-            SET monthly_shifts_worked = monthly_shifts_worked + 1
+            SET monthly_shifts_worked = ISNULL(monthly_shifts_worked, 0) + 1
+                consecutive_night_shifts = 
+                    CASE WHEN NEW.shift_type = 'Night' 
+                        THEN IFNULL(consecutive_night_shifts, 0) + 1
+                        ELSE 0
+                    END
             WHERE staff_id = NEW.staff_id
         END IF; 
     END IF;
+END
+
+CREATE TRIGGER `check_consecutive_shifts` BEFORE INSERT ON `Shifts`
+FOR EACH ROW
+BEGIN
+    DECLARE last_shift DATETIME;
+
+    SELECT TIMESTAMP(start_date, end_time) INTO last_shift FROM Shifts WHERE staff_id = NEW.staff_id AND TIMESTAMP(start_date, end_time) < TIMESTAMP(NEW.start_date, new.end_date) ORDER BY TIMESTAMP(start_date, end_time) DESC LIMIT 1;
+
+    IF last_shift IS NOT NULL THEN
+        IF TIMESTAMPDIFF(HOUR, last_shift, TIMESTAMP(NEW.start_date, NEW.end_time)) < 8 THEN:
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.'
+        END IF;
+    END IF;
+END
+
+CREATE TRIGGER `check_consecutive_shifts` BEFORE UPDATE ON `Shifts`
+FOR EACH ROW
+BEGIN
+    DECLARE last_shift DATETIME;
+
+    SELECT TIMESTAMP(start_date, end_time) INTO last_shift FROM Shifts WHERE staff_id = NEW.staff_id AND TIMESTAMP(start_date, end_time) < TIMESTAMP(NEW.start_date, new.end_date) ORDER BY TIMESTAMP(start_date, end_time) DESC LIMIT 1;
+
+    IF last_shift IS NOT NULL THEN
+        IF TIMESTAMPDIFF(HOUR, last_shift, TIMESTAMP(NEW.start_date, NEW.end_time)) < 8 THEN:
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.'
+        END IF;
+    END IF;
+END
+
+CREATE TRIGGER `check_night_shift_validity` BEFORE INSERT ON `Shifts`
+FOR EACH ROW
+BEGIN
+    DECLARE s_type VARCHAR(45);
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id;
+    
+    IF NEW.shift_type = 'Night' THEN
+        CASE
+            WHERE s_type = 'Doctor' THEN 
+                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id) = 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = "Doctors cannot work more than 3 consecutive night shifts."
+                END IF;
+            WHERE s_type = 'Nurse' THEN
+                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id) = 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = "Doctors cannot work more than 3 consecutive night shifts."
+                END IF;
+            ELSE
+                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id) = 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = "Doctors cannot work more than 3 consecutive night shifts."
+                END IF;
+        END
+    END IF;    
 END
