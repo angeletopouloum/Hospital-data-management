@@ -192,7 +192,7 @@ DROP TABLE IF EXISTS `Shifts`;
 CREATE TABLE IF NOT EXISTS `Shifts` (
     `shift_id` INT NOT NULL AUTO_INCREMENT,
     `shift_type` VARCHAR(20) NOT NULL CHECK (`shift_type` IN ('Morning', 'Afternoon', 'Night')),
-    `shift_status` VARCHAR(45) CHECK (`shift_status` IN ('Completed', 'Scheduled', 'Draft')),
+    `shift_status` VARCHAR(45) CHECK (`shift_status` IN ('Scheduled', 'Draft')),
     `start_time` TIME NOT NULL,
     `end_time` TIME NOT NULL,
    `start_date` DATE NOT NULL,
@@ -471,6 +471,8 @@ BEGIN
     END IF;
 END
 
+CREATE FUNCTION `check_for_senior_doctor`()
+
 CREATE TRIGGER `check_for_senior_doctor_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
 BEGIN
@@ -526,8 +528,17 @@ END
 CREATE TRIGGER `check_max_shifts_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
 BEGIN
+    DECLARE last_shift_date DATE;
     DECLARE s_type VARCHAR(45);
     SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    SELECT MAX(start_date) INTO last_shift_date FROM Shifts WHERE staff_AMKA = NEW.staff_AMKA AND staff_id = NEW.staff_id;
+
+    IF last_shift_date IS NOT NULL AND MONTH(last_shift_date) <> MONTH(NEW.start_date) THEN
+        UPDATE Doctor SET monthly_shifts_worked = 0 WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+        UPDATE Nurse SET monthly_shifts_worked = 0 WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+        UPDATE Administrative_Staff SET monthly_shifts_worked = 0 WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    END IF;    
+    
     CASE
         WHEN s_type = 'Doctor' THEN
             IF (SELECT monthly_shifts_worked FROM Doctor WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 15 THEN
@@ -550,8 +561,17 @@ END
 CREATE TRIGGER `check_max_shifts_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
+    DECLARE last_shift_date DATE;
     DECLARE s_type VARCHAR(45);
     SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    SELECT MAX(start_date) INTO last_shift_date FROM Shifts WHERE staff_AMKA = NEW.staff_AMKA AND staff_id = NEW.staff_id;
+
+    IF last_shift_date IS NOT NULL AND MONTH(last_shift_date) <> MONTH(NEW.start_date) THEN
+        UPDATE Doctor SET monthly_shifts_worked = 0 WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+        UPDATE Nurse SET monthly_shifts_worked = 0 WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+        UPDATE Administrative_Staff SET monthly_shifts_worked = 0 WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    END IF;
+    
     CASE
         WHEN s_type = 'Doctor' THEN
             IF (SELECT monthly_shifts_worked FROM Doctor WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 15 THEN
