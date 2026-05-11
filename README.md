@@ -24,4 +24,3 @@ PROJECT ASSUMPTIONS
 12) Only future shifts can be logged.
 13) Shift hours have values in the range [0, 23].
 14) If a shift is deleted, we assume the staff member did not complete it.
-

@@ -595,7 +595,7 @@ END
 CREATE TRIGGER `schedule_shift_on_duty_ins` AFTER INSERT ON `On_Duty`
 FOR EACH ROW
 BEGIN
-    IF calculate_shift_members(NEW.shift_id, v_start_time, v_start_date) THEN
+    IF calculate_shift_members(NEW.shift_id, NEW.start_time, NEW.start_date) THEN
         UPDATE Shifts
         SET shift_status = 'Scheduled'
         WHERE start_time = NEW.start_time AND start_date = NEW.start_date AND shift_id IN (SELECT shift_id FROM On_duty WHERE department_code = dept);
@@ -605,7 +605,7 @@ END
 CREATE TRIGGER `schedule_shift_on_duty_upd` AFTER UPDATE ON `On_Duty`
 FOR EACH ROW
 BEGIN
-    IF calculate_shift_members(NEW.shift_id, v_start_time, v_start_date) THEN
+    IF calculate_shift_members(NEW.shift_id, NEW.start_time, NEW.start_date) THEN
         UPDATE Shifts
         SET shift_status = 'Scheduled'
         WHERE start_time = NEW.start_time AND start_date = NEW.start_date AND shift_id IN (SELECT shift_id FROM On_duty WHERE department_code = dept);
@@ -863,77 +863,48 @@ BEGIN
     IF NOT calculate_shift_members(OLD.shift_id, OLD.start_time, OLD.start_date) THEN
         UPDATE Shifts
         SET shift_status = 'Draft'
-        WHERE start_time = OLD.start_time AND start_date = OLD.start_date AND shift_id IN (SELECT shift_id FROM On_duty WHERE department_code = dept);
+        WHERE start_time = OLD.start_time AND start_date = OLD.start_date AND shift_id IN (SELECT shift_id FROM On_duty WHERE department_code = v_dept);
     END IF;
 
     IF s_type = 'Doctor' THEN
-            UPDATE Doctor
-            SET monthly_shifts_worked = monthly_shifts_worked - 1,
-                consecutive_night_shifts = 
-                    CASE WHEN OLD.shift_type = 'Night' 
-                        THEN consecutive_night_shifts - 1
-                        ELSE
-                    END CASE;
-            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
-        ELSEIF s_type = 'Nurse' THEN
-            UPDATE Nurse
-            SET monthly_shifts_worked = monthly_shifts_worked - 1,
-                consecutive_night_shifts = 
-                    CASE WHEN NEW.shift_type = 'Night' 
-                        THEN IFNULL(consecutive_night_shifts, 0) + 1
-                        ELSE 0
-                    END CASE;
-            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
-        ELSEIF s_type = 'Administrative Staff' THEN
-            UPDATE Administrative_Staff
-            SET monthly_shifts_worked = monthly_shifts_worked - 1,
-                consecutive_night_shifts = 
-                    CASE WHEN NEW.shift_type = 'Night' 
-                        THEN IFNULL(consecutive_night_shifts, 0) + 1
-                        ELSE 0
-                    END CASE;
-            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
-        END IF; 
+        UPDATE Doctor
+        SET monthly_shifts_worked = monthly_shifts_worked - 1,
+            consecutive_night_shifts = 
+                CASE WHEN OLD.shift_type = 'Night' 
+                    THEN consecutive_night_shifts - 1
+                    ELSE calculate_consecutive_night_shifts(OLD.staff_id, OLD.start_date)
+                END CASE;
+        WHERE staff_id = OLD.staff_id AND AMKA = OLD.staff_AMKA;
+    ELSEIF s_type = 'Nurse' THEN
+        UPDATE Nurse
+        SET monthly_shifts_worked = monthly_shifts_worked - 1,
+            consecutive_night_shifts = 
+                CASE WHEN OLD.shift_type = 'Night' 
+                    THEN consecutive_night_shifts - 1
+                    ELSE calculate_consecutive_night_shifts(OLD.staff_id, OLD.start_date)
+                END CASE;
+        WHERE staff_id = OLD.staff_id AND AMKA = OLD.staff_AMKA;
+    ELSEIF s_type = 'Administrative Staff' THEN
+        UPDATE Administrative_Staff
+        SET monthly_shifts_worked = monthly_shifts_worked - 1,
+            consecutive_night_shifts = 
+                CASE WHEN OLD.shift_type = 'Night' 
+                    THEN consecutive_night_shifts - 1
+                    ELSE calculate_consecutive_night_shifts(OLD.staff_id, OLD.start_date)
+                END CASE;
+        WHERE staff_id = OLD.staff_id AND AMKA = OLD.staff_AMKA;
+    END IF; 
 
+END
+
+CREATE FUNCTION `calculate_consecutive_night_shifts`(p_staff_id INT, p_start_date DATE) RETURNS INT
+BEGIN
+    DECLARE v_count INT;
+    DECLARE v_last_non_night_shift DATE;
+    SELECT MAX(start_date) INTO v_last_non_night_shift FROM Shifts WHERE staff_id = p_staff_id AND shift_type <> 'Night'AND start_date < p_start_date;
+    SELECT COUNT(*) INTO v_count FROM Shifts WHERE staff_id = p_staff_id AND start_date < p_start_date AND (v_last_non_night_shift IS NULL OR start_date > v_last_non_night_shift) AND shift_type = 'Night';
+    RETURN v_count;
 END
 
 $$
 DELIMITER;
-
-CREATE TRIGGER `update_shift_count_upd` AFTER UPDATE ON `Shifts`
-FOR EACH ROW
-BEGIN
-    DECLARE s_type VARCHAR(45);
-    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA; 
-
-    IF (SELECT shift_status FROM Shifts WHERE shift_id = NEW.shift_id) = 'Scheduled' THEN
-        IF s_type = 'Doctor' THEN
-            UPDATE Doctor
-            SET monthly_shifts_worked = IFNULL(monthly_shifts_worked, 0) + 1,
-                consecutive_night_shifts = 
-                    CASE WHEN NEW.shift_type = 'Night' 
-                        THEN IFNULL(consecutive_night_shifts, 0) + 1
-                        ELSE 0
-                    END CASE;
-            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
-        ELSEIF s_type = 'Nurse' THEN
-            UPDATE Nurse
-            SET monthly_shifts_worked = IFNULL(monthly_shifts_worked, 0) + 1,
-                consecutive_night_shifts = 
-                    CASE WHEN NEW.shift_type = 'Night' 
-                        THEN IFNULL(consecutive_night_shifts, 0) + 1
-                        ELSE 0
-                    END CASE;
-            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
-        ELSEIF s_type = 'Administrative Staff' THEN
-            UPDATE Administrative_Staff
-            SET monthly_shifts_worked = IFNULL(monthly_shifts_worked, 0) + 1,
-                consecutive_night_shifts = 
-                    CASE WHEN NEW.shift_type = 'Night' 
-                        THEN IFNULL(consecutive_night_shifts, 0) + 1
-                        ELSE 0
-                    END CASE;
-            WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
-        END IF; 
-    END IF;
-END 
