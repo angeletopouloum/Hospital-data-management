@@ -139,7 +139,6 @@ CREATE TABLE IF NOT EXISTS `Patient` (
 DROP TABLE IF EXISTS `Medicine`;
 
 CREATE TABLE IF NOT EXISTS `Medicine`(
-    `ema_code` VARCHAR(45) NOT NULL,
     `product_name` VARCHAR(100) NOT NULL,
     `active_substance` VARCHAR(255) NOT NULL,
     `route_of_administration` VARCHAR(255) NOT NULL,
@@ -148,7 +147,7 @@ CREATE TABLE IF NOT EXISTS `Medicine`(
     `pharmacovigilance_system_master_file_location` VARCHAR(255) NOT NULL,
     `pharmacovigilance_enquires_email_address` VARCHAR(255) NOT NULL,
     `pharmacovigilance_enquires_phone_number` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`ema_code`, `active_substance`)
+    PRIMARY KEY (`product_name`, `active_substance`, `product_autorization_country`)
 );
 
 DROP TABLE IF EXISTS `Prescription`;
@@ -161,10 +160,14 @@ CREATE TABLE IF NOT EXISTS `Prescription` (
     `end_date` DATE,
     `patient_AMKA` CHAR(11) NOT NULL UNIQUE,
     `doctor_AMKA` CHAR(11) NOT NULL UNIQUE,
-    `medicine_ema_code` VARCHAR(45) NOT NULL UNIQUE,
-    PRIMARY KEY (`prescription_id`, `medicine_ema_code`, `patient_AMKA`, `doctor_AMKA`),
+    `medicine_name` VARCHAR(45) NOT NULL UNIQUE,
+    `active_substance` VARCHAR(255) NOT NULL,
+    `product_autorization_country` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`prescription_id`, `medicine_name`, `patient_AMKA`, `doctor_AMKA`),
     CONSTRAINT `fk_Prescription_Patient` FOREIGN KEY (`patient_AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_Prescription_Medicine` FOREIGN KEY (`medicine_ema_code`) REFERENCES `Medicine` (`ema_code`),
+    CONSTRAINT `fk_Prescription_Medicine1` FOREIGN KEY (`medicine_name`) REFERENCES `Medicine` (`product_name`),
+    CONSTRAINT `fk_Prescription_Medicine2` FOREIGN KEY (`active_substance`) REFERENCES `Medicine` (`active_substance`),
+    CONSTRAINT `fk_Prescription_Medicine3` FOREIGN KEY (`product_autorization_country`) REFERENCES `Medicine` (`product_autorization_country`),
     CONSTRAINT `fk_Prescription_Doctor` FOREIGN KEY (`doctor_AMKA`) REFERENCES `Doctor` (`AMKA`)
 );
 
