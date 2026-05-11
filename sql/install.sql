@@ -1005,19 +1005,23 @@ FOR EACH ROW
 BEGIN
     DECLARE v_total_hospitilization_days DATE;
     DECLARE v_mdn INT;
-    DECLARE v_base_cost DECIMAL(8,2);
-    DECLARE v_daily_cost;
+    DECLARE v_base_cost DECIMAL(10, 2);
+    DECLARE v_daily_cost DECIMAL(10, 2);
+    DECLARE v_lab_costs DECIMAL(10, 2);
+    DECLARE v_operation_costs DECIMAL(10, 2);
 
     SELECT MDN INTO v_mdn FROM Cost_Calculation WHERE KEN = NEW.KEN;
     SELECT base_cost INTO v_base_cost FROM Cost_Calculation WHERE KEN = NEW.KEN;
+    SELECT SUM(cost) INTO v_lab_costs FROM Lab_work_info WHERE id IN (SELECT lab_id FROM Lab_Work WHERE hospitilization_id = NEW.hospitilization.id); 
+    SELECT SUM(cost) INTO v_operation_costs FROM Operation_Info WHERE id IN (SELECT operation_type FROM Operation WHERE hospitilization_id = NEW.hospitilization_id);
 
     SET v_total_hospitalization = DATEDIFF(NEW.discharge_date - NEW.admission_date);
     SET V_daily_cost = v_base_cost / v_mdn;
 
     IF NEW.total_hospitilization_days = v_mdn THEN
-        SET hospitilization_cost = v_base_cost WHERE KEN = NEW.KEN;
+        SET hospitilization_cost = v_base_cost + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
     ELSE
-        SET hospitilization_cost = v_base_cost + (v_total_hospitilization_days - v_mdn)*v_daily_cost/2 WHERE KEN = NEW.KEN;
+        SET hospitilization_cost = v_base_cost + (v_total_hospitilization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
     END IF;
 END
 
