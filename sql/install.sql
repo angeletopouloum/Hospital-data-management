@@ -100,32 +100,6 @@ CREATE TABLE IF NOT EXISTS `Cost_Calculation` (
     PRIMARY KEY (`KEN`)
 );
 
-DROP TABLE IF EXISTS `Hospitalization`;
-
-CREATE TABLE IF NOT EXISTS `Hospitalization` (
-    `hospitalization_id` INT NOT NULL AUTO_INCREMENT,
-    `AMKA` CHAR(11) NOT NULL,
-    `department_code` INT NOT NULL,
-    `bed_id_number` INT NOT NULL UNIQUE,
-    `admission_date` DATE NOT NULL,
-    `discharge_date` DATE,
-    `KEN` VARCHAR(5) NOT NULL,
-    `triage_id` INT NOT NULL UNIQUE,
-    `admission_diagnosis_ICD` VARCHAR(7) NOT NULL,
-    `discharge_diagnosis_ICD` VARCHAR(7),
-    `admission_diagnosis_description` VARCHAR(255) NOT NULL,
-    `discharge_diagnosis_description` VARCHAR(255),
-    `hospitalization_cost` DECIMAL(8, 2),
-    PRIMARY KEY (`hospitalization_id`,`AMKA`, `admission_date`),
-    CONSTRAINT `fk_Hospitalization_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
-    CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN`) REFERENCES `Cost_Calculation` (`KEN`),
-    CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
-    CONSTRAINT `fk_Hospitalization_triage` FOREIGN KEY (`triage_id`) REFERENCES `Triage` (`triage_id`),
-    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`),
-    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`)
-);
-
 DROP TABLE IF EXISTS `Patient`;
 
 CREATE TABLE IF NOT EXISTS `Patient` (
@@ -143,6 +117,30 @@ CREATE TABLE IF NOT EXISTS `Patient` (
     `occupation` VARCHAR(45) NOT NULL,
     `nationality` VARCHAR(45) NOT NULL,
     PRIMARY KEY (`AMKA`)
+);
+
+DROP TABLE IF EXISTS `Hospitalization`;
+
+CREATE TABLE IF NOT EXISTS `Hospitalization` (
+    `hospitalization_id` INT NOT NULL AUTO_INCREMENT,
+    `AMKA` CHAR(11) NOT NULL,
+    `department_code` INT NOT NULL,
+    `bed_id_number` INT NOT NULL UNIQUE,
+    `admission_date` DATE NOT NULL,
+    `discharge_date` DATE,
+    `KEN` VARCHAR(5) NOT NULL,
+    `admission_diagnosis_ICD` VARCHAR(7) NOT NULL,
+    `discharge_diagnosis_ICD` VARCHAR(7),
+    `admission_diagnosis_description` VARCHAR(255) NOT NULL,
+    `discharge_diagnosis_description` VARCHAR(255),
+    `hospitalization_cost` DECIMAL(8, 2),
+    PRIMARY KEY (`hospitalization_id`,`AMKA`, `admission_date`),
+    CONSTRAINT `fk_Hospitalization_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE,
+    CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
+    CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN`) REFERENCES `Cost_Calculation` (`KEN`),
+    CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
+    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`),
+    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`)
 );
 
 DROP TABLE IF EXISTS `Insurance_Type`;
