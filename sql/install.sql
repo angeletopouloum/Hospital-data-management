@@ -1209,7 +1209,7 @@ BEGIN
     SELECT outcome_description INTO old_outcome FROM Outcome WHERE outcome_id = OLD.outcome_id;
     SELECT outcome_description INTO new_outcome FROM Outcome WHERE outcome_id = NEW.outcome_id;
     IF (old_outcome = 'Waiting') AND (new_outcome != 'Waiting') THEN
-        UPDATE Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id SET tr.position = tr.position -1
+        UPDATE Triage tr JOIN Outcome outc ON tr.outcome = outc.outcome_id SET tr.position = tr.position -1
         WHERE outc.outcome_description = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
     END IF;
 END$$
