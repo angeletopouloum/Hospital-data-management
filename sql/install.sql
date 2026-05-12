@@ -445,7 +445,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Department head must be a doctor.';
     END IF; 
-END
+END$$
 
 CREATE TRIGGER `is_doctor_upd` BEFORE UPDATE ON `Department`
 FOR EACH ROW
@@ -454,7 +454,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Department head must be a doctor.';
     END IF; 
-END
+END$$
 
 CREATE TRIGGER `check_department_head_ins` BEFORE INSERT ON `Department`
 FOR EACH ROW
@@ -466,7 +466,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Error: Department head not set. Please assign a doctor as the department head before adding doctors.';
     END IF;
-END
+END$$
 
 CREATE TRIGGER `check_department_head_upd` BEFORE UPDATE ON `Department`
 FOR EACH ROW
@@ -478,7 +478,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Error: Department head not set. Please assign a doctor as the department head before adding doctors.';
     END IF;
-END
+END$$
 
 
 CREATE TRIGGER `check_if_doctor_exists` BEFORE INSERT ON `Doctor`
@@ -488,7 +488,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
     END IF;
-END;
+END$$
 
 
 CREATE TRIGGER `check_if_nurse_exists` BEFORE INSERT ON `Nurse`
@@ -498,7 +498,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
     END IF;
-END;
+END$$
 
 
 
@@ -509,19 +509,16 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The AMKA provided does not correspond to an existing staff member. Please insert into "Staff" first.';
     END IF;
-END;
-
-
+END$$
 
 CREATE TRIGGER `check_is_intern_supervisor` BEFORE DELETE ON `Doctor`
 FOR EACH ROW
 BEGIN
-    IF EXISTS (SELECT * FROM Doctor WHERE supervisor_AMKA = old.AMKA AND rank = 'Inter') THEN
+    IF EXISTS (SELECT * FROM Doctor WHERE supervisor_AMKA = old.AMKA AND rank = 'Intern') THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Cannot delete a doctor who supervises an intern. Please change the Intern"s supervisor first.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_rank_ins` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
@@ -534,9 +531,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Head Physicians cannot have a supervisor.';
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `check_rank_upd` BEFORE UPDATE ON `Doctor`
 FOR EACH ROW
@@ -549,8 +544,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Head Physicians cannot have a supervisor.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_supervision_chain_ins` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
@@ -559,9 +553,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Circular supervision chains are not allowed.';
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `check_supervision_chain_upd` BEFORE UPDATE ON `Doctor`
 FOR EACH ROW
@@ -570,9 +562,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Circular supervision chains are not allowed.';
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `increase_bed_count` AFTER INSERT ON `Beds`
 FOR EACH ROW
@@ -580,9 +570,7 @@ BEGIN
     UPDATE Department
     SET number_of_beds = number_of_beds + 1
     WHERE department_code = new.department_code;
-END
-
-
+END$$
 
 CREATE TRIGGER `decrease_bed_count` AFTER DELETE ON `Beds`
 FOR EACH ROW
@@ -590,9 +578,7 @@ BEGIN
     UPDATE Department
     SET number_of_beds = number_of_beds - 1
     WHERE department_code = old.department_code;
-END
-
-
+END$$
 
 CREATE TRIGGER `check_hospitalization_dates_ins` BEFORE INSERT ON `Hospitalization`
 FOR EACH ROW
@@ -601,8 +587,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Hospitalization admission date must be before discharge date.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_hospitalization_dates_upd` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
@@ -611,9 +596,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Hospitalization admission date must be before discharge date.';
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `check_discharge_data` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
@@ -624,9 +607,7 @@ BEGIN
                 SET MESSAGE_TEXT = 'Discharge diagnosis code and description must be provided when discharge date is set.';
         END IF;
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `set_bed_occupied` AFTER INSERT ON `Hospitalization`
 FOR EACH ROW
@@ -634,9 +615,7 @@ BEGIN
     UPDATE Beds
     SET status = 'Occupied'
     WHERE id_number = new.bed_id_number;
-END
-
-
+END$$
 
 CREATE TRIGGER `set_bed_available` AFTER UPDATE ON `Hospitalization`
 FOR EACH ROW
@@ -646,9 +625,7 @@ BEGIN
         SET status = 'Available'
         WHERE id_number = new.bed_id_number;
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `check_bed_availability` BEFORE INSERT ON `Hospitalization`
 FOR EACH ROW
@@ -657,9 +634,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The selected bed is not available.';
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `check_medicine_upd` BEFORE UPDATE ON `Medicine`
 FOR EACH ROW
@@ -672,9 +647,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `check_medicine_ins` BEFORE INSERT ON `Medicine`
 FOR EACH ROW
@@ -687,9 +660,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
     END IF;
-END
-
-
+END$$
 
 CREATE TRIGGER `check_prescription_dates_upd` BEFORE UPDATE ON `Prescription`
 FOR EACH ROW
@@ -698,8 +669,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_prescription_dates_ins` BEFORE INSERT ON `Prescription`
 FOR EACH ROW
@@ -708,7 +678,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
     END IF;
-END
+END$$
 
 
 CREATE FUNCTION `calculate_shift_members` (p_shift_id INT, p_start_time TIME, p_start_date DATE) RETURNS TINYINT(1)
@@ -728,8 +698,7 @@ BEGIN
     ELSE
         RETURN FALSE;
     END IF;
-END
-
+END$$
 
 CREATE FUNCTION `exists_senior_doctor`(p_start_time TIME, p_start_date DATE, p_dept_code INT) RETURNS TINYINT(1)
 BEGIN
@@ -745,8 +714,7 @@ BEGIN
     ELSE
         RETURN FALSE;
     END IF;
-END
-
+END$$
 
 CREATE FUNCTION `is_intern` (p_staff_id INT) RETURNS TINYINT(1)
 BEGIN
@@ -755,8 +723,7 @@ BEGIN
     ELSE
         RETURN FALSE;
     END IF;
-END
-
+END$$
 
 CREATE FUNCTION `f_check_for_senior_doctor`(p_staff_id INT, p_start_time TIME, p_start_date DATE, p_dept_code INT) RETURNS TINYINT(1)
 BEGIN
@@ -772,8 +739,7 @@ BEGIN
     END IF;
 
     RETURN exists_senior_doctor(p_start_time, p_start_date, p_dept_code);
-END
-
+END$$
 
 CREATE TRIGGER `update_shift_count_ins` AFTER INSERT ON `Shifts`
 FOR EACH ROW
@@ -811,8 +777,7 @@ BEGIN
             WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         END IF; 
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `update_shift_count_upd` AFTER UPDATE ON `Shifts`
 FOR EACH ROW
@@ -850,8 +815,7 @@ BEGIN
             WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         END IF; 
     END IF;
-END 
-
+END$$
 
 CREATE TRIGGER `schedule_shift_on_duty_ins` AFTER INSERT ON `On_Duty`
 FOR EACH ROW
@@ -861,8 +825,7 @@ BEGIN
         SET shift_status = 'Scheduled'
         WHERE start_time = NEW.start_time AND start_date = NEW.start_date AND shift_id IN (SELECT shift_id FROM On_duty WHERE department_code = dept);
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `schedule_shift_on_duty_upd` AFTER UPDATE ON `On_Duty`
 FOR EACH ROW
@@ -872,8 +835,7 @@ BEGIN
         SET shift_status = 'Scheduled'
         WHERE start_time = NEW.start_time AND start_date = NEW.start_date AND shift_id IN (SELECT shift_id FROM On_duty WHERE department_code = dept);
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_for_senior_doctor_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
@@ -885,8 +847,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_for_senior_doctor_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -898,8 +859,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `set_shift_validity_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -910,8 +870,7 @@ BEGIN
     END IF;
 
     SET NEW.shift_status = 'Draft';
-END
-
+END$$
 
 CREATE TRIGGER `set_shift_validity_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
@@ -922,8 +881,7 @@ BEGIN
     END IF;
     
     SET NEW.shift_status = 'Draft';
-END
-
+END$$
 
 CREATE TRIGGER `check_max_shifts_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
@@ -958,8 +916,7 @@ BEGIN
                     SET MESSAGE_TEXT = 'An administrative staff member cannot work more than 25 shifts per month.';
             END IF; 
     END CASE;    
-END
-
+END$$
 
 CREATE TRIGGER `check_max_shifts_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -994,8 +951,7 @@ BEGIN
                     SET MESSAGE_TEXT = 'An administrative staff member cannot work more than 25 shifts per month.';
             END IF; 
     END CASE;   
-END
-
+END$$
 
 CREATE TRIGGER `check_if_shift_exists` BEFORE INSERT ON `On_Duty`
 FOR EACH ROW
@@ -1004,8 +960,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The shift_id provided does not correspond to an existing shift. Please insert into "Shifts" first.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_shift_type_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW FOLLOWS `set_shift_validity_ins` PRECEDES `check_night_shift_validity_ins`
@@ -1020,8 +975,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_shift_type_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW FOLLOWS `set_shift_validity_upd` PRECEDES `check_night_shift_validity_upd`
@@ -1036,8 +990,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_consecutive_shifts_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -1052,8 +1005,7 @@ BEGIN
                 SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.';
         END IF;
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_consecutive_shifts_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
@@ -1068,8 +1020,7 @@ BEGIN
                 SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.';
         END IF;
     END IF;
-END
-
+END$$
 
 CREATE TRIGGER `check_night_shift_validity_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW FOLLOWS `check_shift_type_ins`
@@ -1096,8 +1047,7 @@ BEGIN
                 END IF;
         END CASE;
     END IF;    
-END
-
+END$$
 
 CREATE TRIGGER `check_night_shift_validity_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW FOLLOWS `check_shift_type_upd`
@@ -1124,8 +1074,7 @@ BEGIN
                 END IF;
         END CASE;
     END IF;    
-END
-
+END$$
 
 CREATE TRIGGER `reschedule_shift_del` AFTER DELETE ON `Shifts`
 FOR EACH ROW
@@ -1170,8 +1119,7 @@ BEGIN
                 END CASE;
         WHERE staff_id = OLD.staff_id AND AMKA = OLD.staff_AMKA;
     END IF; 
-END
-
+END$$
 
 CREATE FUNCTION `calculate_consecutive_night_shifts`(p_staff_id INT, p_start_date DATE) RETURNS INT
 BEGIN
@@ -1180,8 +1128,7 @@ BEGIN
     SELECT MAX(start_date) INTO v_last_non_night_shift FROM Shifts WHERE staff_id = p_staff_id AND shift_type <> 'Night'AND start_date < p_start_date;
     SELECT COUNT(*) INTO v_count FROM Shifts WHERE staff_id = p_staff_id AND start_date < p_start_date AND (v_last_non_night_shift IS NULL OR start_date > v_last_non_night_shift) AND shift_type = 'Night';
     RETURN v_count;
-END
-
+END$$
 
 CREATE TRIGGER `calculate_total_cost` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
@@ -1206,7 +1153,7 @@ BEGIN
     ELSE
         SET hospitalization_cost = v_base_cost + (v_total_hospitalization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
     END IF;
-END
+END$$
 
 CREATE TRIGGER `check_if_on_call_surgeon_ins` BEFORE INSERT ON `Operation`
 FOR EACH ROW
@@ -1226,7 +1173,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The specified surgeon does not have registered shifts.';
     END IF;
-END 
+END$$
 
 CREATE TRIGGER `check_if_on_call_surgeon_upd` BEFORE UPDATE ON `Operation`
 FOR EACH ROW
@@ -1246,7 +1193,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The specified surgeon does not have registered shifts.';
     END IF;
-END 
+END$$
 
 CREATE TRIGGER `check_if_on_call_staff_ins` BEFORE INSERT ON `Assistant_Staff`
 FOR EACH ROW
@@ -1266,7 +1213,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The specified staff member does not have registered shifts.';
     END IF;
-END 
+END$$
 
 CREATE TRIGGER `check_if_on_call_staff_upd` BEFORE UPDATE ON `Assistant_Staff`
 FOR EACH ROW
@@ -1286,7 +1233,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The specified staff member does not have registered shifts.';
     END IF;
-END 
+END$$ 
 
 -- CHECK POSITION BEFORE INSERT
 CREATE TRIGGER calculate_position_triage BEFORE INSERT ON Triage
@@ -1296,7 +1243,7 @@ BEGIN
     SELECT COUNT(*) + 1 INTO queue_length FROM Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id 
     WHERE outc.outcome_name = 'Waiting' AND (tr.urgency_level < NEW.urgency_level) OR ((tr.urgency_level = NEW.urgency_level) AND (tr.arrival_time < NEW.arrival_time));
     SET NEW.position = queue_length;
-END
+END$$
   
 -- CHECK POSITION AFTER UPDATE
 CREATE TRIGGER calculate_position_triage_upd AFTER UPDATE ON Triage
@@ -1310,7 +1257,7 @@ BEGIN
         UPDATE Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id SET tr.position = tr.position -1
         WHERE outc.outcome_name = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
     END IF;
-END
+END$$
 
 CREATE TRIGGER finished_hospitalization_evaluation BEFORE INSERT ON Hospital_Evaluation
 FOR EACH ROW
@@ -1322,7 +1269,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'Cannot evaluate hospital experience before discharge';
     END IF;
-END
+END$$
 
 CREATE TRIGGER finished_doctor_evaluation BEFORE INSERT ON Doctor_Evaluation
 FOR EACH ROW
@@ -1334,7 +1281,7 @@ BEGIN
     SIGNAL SQLSTATE '45000' 
       SET MESSAGE_TEXT = 'Cannot evaluate doctor before discharge';
   END IF;
-END
+END$$
 
 -- CHECK IF DOCTOR HAS PRESCRIBED ANYTHING TO THIS PATIENT DURING THIS HOSPITALIZATION
 CREATE TRIGGER doctor_evaluation_prescription_check BEFORE INSERT ON Doctor_Evaluation
@@ -1348,7 +1295,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'Δεν γίνεται να αξιολογήσετε χωρίς να σας έχει συνταγογραφήσει σε αυτή τη νοσηλεία.';
     END IF;
-END
+END$$
 
 -- CHECK LAB_WORK RESULTS: MUST CONTAIN EITHER ARITHMETIC VALUES OR TEXT OR BOTH
 CREATE TRIGGER lab_work_result BEFORE INSERT ON Lab_Work
@@ -1362,7 +1309,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'Either lab result value with units or result text must be provided';
     END IF;
-END
+END$$
 
 -- CHECK IF MAIN DOCTOR FOR OPERATION IS ACTUALLY A SURGEON
 CREATE TRIGGER main_doctor_operation BEFORE INSERT ON Operation
@@ -1376,7 +1323,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Main doctor for operation must be a surgeon.';
     END IF;
-END
+END$$
 
 -- CHECK IF OPERATION ROOM IS NOT FOR SURGERY AND IF SURGEON IS ASSIGNED
 CREATE TRIGGER check_operation_room_type BEFORE INSERT ON Operation
@@ -1389,7 +1336,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Οι χειρουργοί κάνουν μόνο επεμβάσεις, όχι ιατρικές πράξεις.';
     END IF;
-END
+END$$
 
 -- CHECK IF PATIENT IS HOSPITALIZED FOR OPERATIONS AND LAB WORK
 CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Operation
@@ -1399,7 +1346,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'To perform operation patient must be hospitalized.';
     END IF;
-END
+END$$
 
 -- edw mporw na prosthesw to discharge date an einai megalutero apo to start date ths epemvashs
 CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Lab_Work
@@ -1409,7 +1356,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'To perform lab work patient must be hospitalized.';
     END IF;
-END
+END$$
 
 CREATE TRIGGER occupied_operation_room BEFORE INSERT ON Operation
 FOR EACH ROW
@@ -1420,7 +1367,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Operation room is occupied.';
     END IF;
-END
+END$$
 
 CREATE TRIGGER occupied_surgeon BEFORE INSERT ON Operation
 FOR EACH ROW
@@ -1431,7 +1378,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Surgeon is busy.';
     END IF;
-END
+END$$
 
 CREATE TRIGGER occupied_assistant_staff BEFORE INSERT ON Assistant_Staff
 FOR EACH ROW
@@ -1450,7 +1397,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Assistant staff busy.';
     END IF;
-END
+END$$
 
 CREATE TRIGGER check_surgeon_on_assistant_staff BEFORE INSERT ON Assistant_Staff
 FOR EACH ROW
@@ -1466,7 +1413,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Assistant staff cannot be the main surgeon.';
     END IF;
-END
+END$$
 
 $$
 DELIMITER;
