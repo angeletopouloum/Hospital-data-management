@@ -1203,8 +1203,8 @@ FOR EACH ROW
 BEGIN
     DECLARE old_outcome VARCHAR(45);
     DECLARE new_outcome VARCHAR(45);
-    SELECT outcome_description INTO old_outcome FROM Outcome WHERE outcome_id = OLD.outcome_id;
-    SELECT outcome_description INTO new_outcome FROM Outcome WHERE outcome_id = NEW.outcome_id;
+    SELECT outcome_description INTO old_outcome FROM Outcome WHERE outcome_id = OLD.outcome;
+    SELECT outcome_description INTO new_outcome FROM Outcome WHERE outcome_id = NEW.outcome;
     IF (old_outcome = 'Waiting') AND (new_outcome != 'Waiting') THEN
         UPDATE Triage tr JOIN Outcome outc ON tr.outcome = outc.outcome_id SET tr.position = tr.position -1
         WHERE outc.outcome_description = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
