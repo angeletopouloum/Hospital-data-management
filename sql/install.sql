@@ -1,6 +1,6 @@
-DROP SCHEMA IF EXISTS Ygeiopolis-Management;
-CREATE SCHEMA Ygeiopolis-Management;
-USE Ygeiopolis-Management;
+DROP SCHEMA IF EXISTS HospitalManagement;
+CREATE SCHEMA HospitalManagement;
+USE HospitalManagement;
 
 DROP TABLE IF EXISTS `Staff`;
 
