@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS `On_Duty` (
     CONSTRAINT `fk_on_duty_shifts` FOREIGN KEY (`shift_id`) REFERENCES `Shifts` (`shift_id`) ON DELETE CASCADE
 );
 
---epeigonta peristatika - dialogh
+-- epeigonta peristatika - dialogh
 DROP TABLE IF EXISTS Outcome;
 
 CREATE TABLE IF NOT EXISTS Outcome (
@@ -222,16 +222,16 @@ CREATE TABLE IF NOT EXISTS Triage (
   CONSTRAINT chk_urgency_level CHECK(urgency_level in(1,2,3,4,5))
 );
 
---Lab_work
+-- Lab_work
 
 DROP TABLE IF EXISTS Lab_work_info;
---lookup table
---(id: auto inc kathe fora pou vazoume neo eidos ejetashs, lab_type: px aimatologikes, apeikonistikes, cost: einai standard gia kathe ejetash)
+-- lookup table
+-- (id: auto inc kathe fora pou vazoume neo eidos ejetashs, lab_type: px aimatologikes, apeikonistikes, cost: einai standard gia kathe ejetash)
 CREATE TABLE IF NOT EXISTS Lab_work_info(
   id INT NOT NULL AUTO_INCREMENT,
   lab_code VARCHAR(45) NOT NULL UNIQUE,
   lab_description VARCHAR(255) NOT NULL,
-  cost DECIMAL(10,2) NOT NULL, --gia to apo panw mporei to nosokomeio na exei 2 kwdikous gia aimtologikes px aimatologikes 01 kai aimatologikes 02, opote auto apo mono tou na deixnei oti einai alles ejetaseia
+  cost DECIMAL(10,2) NOT NULL, -- gia to apo panw mporei to nosokomeio na exei 2 kwdikous gia aimtologikes px aimatologikes 01 kai aimatologikes 02, opote auto apo mono tou na deixnei oti einai alles ejetaseia
   PRIMARY KEY (id)
   );
 
@@ -253,7 +253,7 @@ CREATE TABLE IF NOT EXISTS Lab_Work(
 );
 
 DROP TABLE IF EXISTS Operation_info;
---lookup table
+-- lookup table
 CREATE TABLE IF NOT EXISTS Operation_info(
   id INT NOT NULL AUTO_INCREMENT,
   operation_code VARCHAR(45) NOT NULL UNIQUE,
@@ -306,18 +306,18 @@ CREATE TABLE IF NOT EXISTS Assistant_Staff(
   CONSTRAINT fk_assistant_staff FOREIGN KEY (assistant_staff_id) REFERENCES Staff(staff_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE --Tha boruse na bei staff id  
 );
 
---ratings
+-- ratings
 
 DROP TABLE IF EXISTS Hospital_Evaluation;
 
 CREATE TABLE IF NOT EXISTS Hospital_Evaluation(
   hospital_evaluation_id INT NOT NULL AUTO_INCREMENT,
   hospitalization_id VARCHAR(11) NOT NULL UNIQUE,
-  nurse_qualty INT NOT NULL, --1-5 OPOTE PAEI KAI TINYINT?
+  nurse_qualty INT NOT NULL, -- 1,5 OPOTE PAEI KAI TINYINT?
   cleanliness INT NOT NULL,
   food_quality INT NOT NULL,
   overall_experience INT NOT NULL,
-  eval_date DATETIME NOT NULL, --gia ta triggers logika
+  eval_date DATETIME NOT NULL, -- gia ta triggers logika
   CONSTRAINT fk_hospitalization_evaluation FOREIGN KEY (hospitalization_id) REFERENCES Hospitalization(hospitalization_id) ON DELETE CASCADE ON UPDATE CASCADE,
   PRIMARY KEY (hospital_evaluation_id),
   CHECK (nurse_qualty in (1, 2, 3, 4, 5)),
@@ -341,10 +341,10 @@ CREATE TABLE IF NOT EXISTS Doctor_Evaluation(
 );
 
 DROP TABLE IF EXISTS Drug_Info_Active_Substance;
---isws na vgalw to id giati sto prescription exw to product name pou zhtaei h ekfwnhsh
+-- isws na vgalw to id giati sto prescription exw to product name pou zhtaei h ekfwnhsh
 CREATE TABLE IF NOT EXISTS Drug_Info_Active_Substance(
   id INT NOT NULL AUTO_INCREMENT,
-  product_name VARCHAR(45) NOT NULL, --prepei na megalwsei to onoma
+  product_name VARCHAR(45) NOT NULL, -- prepei na megalwsei to onoma
   active_substance VARCHAR(45) NOT NULL, 
   route_of_administration VARCHAR(255) NOT NULL,
   product_authorization_country VARCHAR(45) NOT NULL,
@@ -356,7 +356,7 @@ CREATE TABLE IF NOT EXISTS Drug_Info_Active_Substance(
   UNIQUE(product_name, active_substance, product_authorization_country)
 );
 
---diaforetikes allergies -> diaforetikes katagrafes
+-- diaforetikes allergies = diaforetikes katagrafes
 DROP TABLE IF EXISTS Patient_Allergy;
 
 CREATE TABLE IF NOT EXISTS Patient_Allergy(
@@ -370,7 +370,7 @@ CREATE TABLE IF NOT EXISTS Patient_Allergy(
 DROP TABLE IF EXISTS Prescription;
 
 CREATE TABLE IF NOT EXISTS Prescription (
-    prescription_id INT NOT NULL AUTO_INCREMENT, ---kalutera int gia na meiwnetai o xronos sugkrishs, varchar pio argo
+    prescription_id INT NOT NULL AUTO_INCREMENT, -- kalutera int gia na meiwnetai o xronos sugkrishs, varchar pio argo
     hospitalization_id INT NOT NULL,
     dosage VARCHAR(45) NOT NULL,
     frequency VARCHAR(45) NOT NULL,
@@ -1301,7 +1301,7 @@ BEGIN
     END IF;
 END 
 
---CHECK POSITION BEFORE INSERT
+-- CHECK POSITION BEFORE INSERT
 CREATE TRIGGER calculate_position_triage BEFORE INSERT ON Triage
 FOR EACH ROW
 BEGIN
@@ -1311,7 +1311,7 @@ BEGIN
     SET NEW.position = queue_length;
 END$$
   
---CHECK POSITION AFTER UPDATE
+-- CHECK POSITION AFTER UPDATE
 CREATE TRIGGER calculate_position_triage_upd AFTER UPDATE ON Triage
 FOR EACH ROW
 BEGIN
@@ -1349,7 +1349,7 @@ BEGIN
   END IF;
 END$$
 
---CHECK IF DOCTOR HAS PRESCRIBED ANYTHING TO THIS PATIENT DURING THIS HOSPITALIZATION
+-- CHECK IF DOCTOR HAS PRESCRIBED ANYTHING TO THIS PATIENT DURING THIS HOSPITALIZATION
 CREATE TRIGGER doctor_evaluation_prescription_check BEFORE INSERT ON Doctor_Evaluation
 FOR EACH ROW
 BEGIN
@@ -1363,7 +1363,7 @@ BEGIN
     END IF;
 END$$
 
---CHECK LAB_WORK RESULTS: MUST CONTAIN EITHER ARITHMETIC VALUES OR TEXT OR BOTH
+-- CHECK LAB_WORK RESULTS: MUST CONTAIN EITHER ARITHMETIC VALUES OR TEXT OR BOTH
 CREATE TRIGGER lab_work_result BEFORE INSERT ON Lab_Work
 FOR EACH ROW
 BEGIN
@@ -1377,7 +1377,7 @@ BEGIN
     END IF;
 END$$
 
---CHECK IF MAIN DOCTOR FOR OPERATION IS ACTUALLY A SURGEON
+-- CHECK IF MAIN DOCTOR FOR OPERATION IS ACTUALLY A SURGEON
 CREATE TRIGGER main_doctor_operation BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
@@ -1391,7 +1391,7 @@ BEGIN
     END IF;
 END$$
 
---CHECK IF OPERATION ROOM IS NOT FOR SURGERY AND IF SURGEON IS ASSIGNED
+-- CHECK IF OPERATION ROOM IS NOT FOR SURGERY AND IF SURGEON IS ASSIGNED
 CREATE TRIGGER check_operation_room_type BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN 
@@ -1404,7 +1404,7 @@ BEGIN
     END IF;
 END$$
 
---CHECK IF PATIENT IS HOSPITALIZED FOR OPERATIONS AND LAB WORK
+-- CHECK IF PATIENT IS HOSPITALIZED FOR OPERATIONS AND LAB WORK
 CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
@@ -1414,7 +1414,7 @@ BEGIN
     END IF;
 END$$
 
---edw mporw na prosthesw to discharge date an einai megalutero apo to start date ths epemvashs
+-- edw mporw na prosthesw to discharge date an einai megalutero apo to start date ths epemvashs
 CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Lab_Work
 FOR EACH ROW
 BEGIN
