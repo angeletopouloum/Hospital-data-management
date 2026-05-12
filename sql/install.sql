@@ -829,6 +829,90 @@ BEGIN
     SET NEW.shift_status = 'Draft';
 END$$
 
+CREATE TRIGGER `check_shift_type_ins` BEFORE INSERT ON `Shifts`
+FOR EACH ROW PRECEDES `check_night_shift_validity_ins`
+BEGIN
+    IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
+        SET NEW.shift_type = 'Morning';
+    ELSEIF HOUR(NEW.start_time) >= 15 AND HOUR(NEW.start_time) < 23 THEN
+        SET NEW.shift_type = 'Afternoon';
+    ELSEIF HOUR(NEW.start_time) = 23 OR HOUR(NEW.start_time) < 7 THEN
+        SET NEW.shift_type = 'Night';
+    ELSE
+        SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
+    END IF;
+END$$
+
+CREATE TRIGGER `check_shift_type_upd` BEFORE UPDATE ON `Shifts`
+FOR EACH ROW PRECEDES `check_night_shift_validity_upd`
+BEGIN
+    IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
+        SET NEW.shift_type = 'Morning';
+    ELSEIF HOUR(NEW.start_time) >= 15 AND HOUR(NEW.start_time) < 23 THEN
+        SET NEW.shift_type = 'Afternoon';
+    ELSEIF HOUR(NEW.start_time) = 23 OR HOUR(NEW.start_time) < 7 THEN
+        SET NEW.shift_type = 'Night';
+    ELSE
+        SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
+    END IF;
+END$$
+
+CREATE TRIGGER `check_night_shift_validity_ins` BEFORE INSERT ON `Shifts`
+FOR EACH ROW FOLLOWS `check_shift_type_ins`
+BEGIN
+    DECLARE s_type VARCHAR(45);
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    
+    IF NEW.shift_type = 'Night' THEN
+        CASE
+            WHEN s_type = 'Doctor' THEN 
+                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                        SET MESSAGE_TEXT = 'Doctors cannot work more than 3 consecutive night shifts.';
+                END IF;
+            WHEN s_type = 'Nurse' THEN
+                IF (SELECT consecutive_night_shifts FROM Nurse WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                        SET MESSAGE_TEXT = 'Nurses cannot work more than 3 consecutive night shifts.';
+                END IF;
+            WHEN s_type = 'Administrative Staff' THEN
+                IF (SELECT consecutive_night_shifts FROM Administrative_Staff WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                        SET MESSAGE_TEXT = 'Administrative Staff cannot work more than 3 consecutive night shifts.';
+                END IF;
+        END CASE;
+    END IF;    
+END$$
+
+CREATE TRIGGER `check_night_shift_validity_upd` BEFORE UPDATE ON `Shifts`
+FOR EACH ROW FOLLOWS `check_shift_type_upd`
+BEGIN
+    DECLARE s_type VARCHAR(45);
+    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
+    
+    IF NEW.shift_type = 'Night' THEN
+        CASE
+            WHEN s_type = 'Doctor' THEN 
+                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                        SET MESSAGE_TEXT = 'Doctors cannot work more than 3 consecutive night shifts.';
+                END IF;
+            WHEN s_type = 'Nurse' THEN
+                IF (SELECT consecutive_night_shifts FROM Nurse WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                        SET MESSAGE_TEXT = 'Nurses cannot work more than 3 consecutive night shifts.';
+                END IF;
+            WHEN s_type = 'Administrative Staff' THEN
+                IF (SELECT consecutive_night_shifts FROM Administrative_Staff WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
+                    SIGNAL SQLSTATE '45000'
+                        SET MESSAGE_TEXT = 'Administrative Staff cannot work more than 3 consecutive night shifts.';
+                END IF;
+        END CASE;
+    END IF;    
+END$$
+
 CREATE TRIGGER `check_max_shifts_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
 BEGIN
@@ -908,36 +992,6 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_shift_type_ins` BEFORE INSERT ON `Shifts`
-FOR EACH ROW PRECEDES `check_night_shift_validity_ins`
-BEGIN
-    IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
-        SET NEW.shift_type = 'Morning';
-    ELSEIF HOUR(NEW.start_time) >= 15 AND HOUR(NEW.start_time) < 23 THEN
-        SET NEW.shift_type = 'Afternoon';
-    ELSEIF HOUR(NEW.start_time) = 23 OR HOUR(NEW.start_time) < 7 THEN
-        SET NEW.shift_type = 'Night';
-    ELSE
-        SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
-    END IF;
-END$$
-
-CREATE TRIGGER `check_shift_type_upd` BEFORE UPDATE ON `Shifts`
-FOR EACH ROW PRECEDES `check_night_shift_validity_upd`
-BEGIN
-    IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
-        SET NEW.shift_type = 'Morning';
-    ELSEIF HOUR(NEW.start_time) >= 15 AND HOUR(NEW.start_time) < 23 THEN
-        SET NEW.shift_type = 'Afternoon';
-    ELSEIF HOUR(NEW.start_time) = 23 OR HOUR(NEW.start_time) < 7 THEN
-        SET NEW.shift_type = 'Night';
-    ELSE
-        SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = 'Invalid start time for shift. Please ensure the start time falls within the defined shift hours.';
-    END IF;
-END$$
-
 CREATE TRIGGER `check_consecutive_shifts_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
@@ -966,60 +1020,6 @@ BEGIN
                 SET MESSAGE_TEXT = 'Could not register shift: an 8-hour rest is required between shifts.';
         END IF;
     END IF;
-END$$
-
-CREATE TRIGGER `check_night_shift_validity_ins` BEFORE INSERT ON `Shifts`
-FOR EACH ROW FOLLOWS `check_shift_type_ins`
-BEGIN
-    DECLARE s_type VARCHAR(45);
-    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
-    
-    IF NEW.shift_type = 'Night' THEN
-        CASE
-            WHEN s_type = 'Doctor' THEN 
-                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                        SET MESSAGE_TEXT = 'Doctors cannot work more than 3 consecutive night shifts.';
-                END IF;
-            WHEN s_type = 'Nurse' THEN
-                IF (SELECT consecutive_night_shifts FROM Nurse WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                        SET MESSAGE_TEXT = 'Nurses cannot work more than 3 consecutive night shifts.';
-                END IF;
-            WHEN s_type = 'Administrative Staff' THEN
-                IF (SELECT consecutive_night_shifts FROM Administrative_Staff WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                        SET MESSAGE_TEXT = 'Administrative Staff cannot work more than 3 consecutive night shifts.';
-                END IF;
-        END CASE;
-    END IF;    
-END$$
-
-CREATE TRIGGER `check_night_shift_validity_upd` BEFORE UPDATE ON `Shifts`
-FOR EACH ROW FOLLOWS `check_shift_type_upd`
-BEGIN
-    DECLARE s_type VARCHAR(45);
-    SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
-    
-    IF NEW.shift_type = 'Night' THEN
-        CASE
-            WHEN s_type = 'Doctor' THEN 
-                IF (SELECT consecutive_night_shifts FROM Doctor WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                        SET MESSAGE_TEXT = 'Doctors cannot work more than 3 consecutive night shifts.';
-                END IF;
-            WHEN s_type = 'Nurse' THEN
-                IF (SELECT consecutive_night_shifts FROM Nurse WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                        SET MESSAGE_TEXT = 'Nurses cannot work more than 3 consecutive night shifts.';
-                END IF;
-            WHEN s_type = 'Administrative Staff' THEN
-                IF (SELECT consecutive_night_shifts FROM Administrative_Staff WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA) >= 3 THEN
-                    SIGNAL SQLSTATE '45000'
-                        SET MESSAGE_TEXT = 'Administrative Staff cannot work more than 3 consecutive night shifts.';
-                END IF;
-        END CASE;
-    END IF;    
 END$$
 
 CREATE TRIGGER `reschedule_shift_del` AFTER DELETE ON `Shifts`
