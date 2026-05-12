@@ -1094,10 +1094,10 @@ BEGIN
     SET v_total_hospitalization_days = DATEDIFF(NEW.discharge_date, NEW.admission_date);
     SET V_daily_cost = v_base_cost / v_mdn;
 
-    IF NEW.total_hospitalization_days = v_mdn THEN
-        SET NEW.hospitalization_cost = v_base_cost + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
+    IF v_total_hospitalization_days = v_mdn THEN
+        SET NEW.hospitalization_cost = v_base_cost + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0);
     ELSE
-        SET NEW.hospitalization_cost = v_base_cost + (v_total_hospitalization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
+        SET NEW.hospitalization_cost = v_base_cost + (v_total_hospitalization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0);
     END IF;
 END$$
 
