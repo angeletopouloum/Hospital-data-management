@@ -1108,7 +1108,7 @@ BEGIN
     DECLARE v_shift_start TIME;
     DECLARE v_shift_end TIME;
 
-    SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.sugeon_id ORDER BY timestamp DESC LIMIT 1;
+    SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.surgeon_id ORDER BY timestamp DESC LIMIT 1;
 
     IF v_shift_date IS NOT NULL AND v_shift_start IS NOT NULL AND v_shift_end IS NOT NULL THEN
         IF v_shift_date <> DATE(NEW.start_time) OR v_shift_start > TIME(NEW.start_time) OR v_shift_end < TIME(NEW.expected_end_time) THEN
@@ -1128,7 +1128,7 @@ BEGIN
     DECLARE v_shift_start TIME;
     DECLARE v_shift_end TIME;
 
-    SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.sugeon_id ORDER BY timestamp DESC LIMIT 1;
+    SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.surgeon_id ORDER BY timestamp DESC LIMIT 1;
 
     IF v_shift_date IS NOT NULL AND v_shift_start IS NOT NULL AND v_shift_end IS NOT NULL THEN
         IF v_shift_date <> DATE(NEW.start_time) OR v_shift_start > TIME(NEW.start_time) OR v_shift_end < TIME(NEW.expected_end_time) THEN
