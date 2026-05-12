@@ -1293,7 +1293,7 @@ BEGIN
 END$$
 
 -- CHECK IF PATIENT IS HOSPITALIZED FOR OPERATIONS AND LAB WORK
-CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Operation
+CREATE TRIGGER check_if_hospitalized_op BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
     IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
@@ -1303,7 +1303,7 @@ BEGIN
 END$$
 
 -- edw mporw na prosthesw to discharge date an einai megalutero apo to start date ths epemvashs
-CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Lab_Work
+CREATE TRIGGER check_if_hospitalized_lab BEFORE INSERT ON Lab_Work
 FOR EACH ROW
 BEGIN
     IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
