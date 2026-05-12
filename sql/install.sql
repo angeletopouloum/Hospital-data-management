@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `Department` (
     `building_floor` VARCHAR(45) NOT NULL,
     `building` VARCHAR(255) NOT NULL,
     `department_head_AMKA` CHAR(11) UNIQUE,
-    PRIMARY KEY (`department_code`),
+    PRIMARY KEY (`department_code`)
 );
 
 DROP TABLE IF EXISTS `Doctor`;
@@ -85,16 +85,25 @@ DROP TABLE IF EXISTS `Beds`;
 CREATE TABLE IF NOT EXISTS `Beds` (
     `id_number` INT NOT NULL UNIQUE AUTO_INCREMENT,
     `type` VARCHAR(45) NOT NULL,
-    `status` VARCHAR(45) NOT NULL CHECK (`status` IN ('Occupied', 'Available', 'Under Maintenance'));,
+    `status` VARCHAR(45) NOT NULL CHECK (`status` IN ('Occupied', 'Available', 'Under Maintenance')),
     `department_code` INT NOT NULL,
     PRIMARY KEY (`id_number`),
-    CONSTRAINT `fk_Beds_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE,
+    CONSTRAINT `fk_Beds_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS `Hospitilization`;
+DROP TABLE IF EXISTS `Cost_Calculation`;
 
-CREATE TABLE IF NOT EXISTS `Hospitilization` (
-    `hospitilization_id` INT NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `Cost_Calculation` (
+    `KEN` VARCHAR(5) NOT NULL,
+    `base_cost` INT NOT NULL,
+    `MDN` INT NOT NULL,    
+    PRIMARY KEY (`KEN`)
+);
+
+DROP TABLE IF EXISTS `Hospitalization`;
+
+CREATE TABLE IF NOT EXISTS `Hospitalization` (
+    `hospitalization_id` INT NOT NULL AUTO_INCREMENT,
     `AMKA` CHAR(11) NOT NULL,
     `department_code` INT NOT NULL,
     `bed_id_number` INT NOT NULL UNIQUE,
@@ -106,15 +115,15 @@ CREATE TABLE IF NOT EXISTS `Hospitilization` (
     `discharge_diagnosis_ICD` VARCHAR(7),
     `admission_diagnosis_description` VARCHAR(255) NOT NULL,
     `discharge_diagnosis_description` VARCHAR(255),
-    `hospitilization_cost` DECIMAL(8, 2),
-    PRIMARY KEY (`hospitilization_id`,`AMKA`, `admission_date`),
-    CONSTRAINT `fk_Hospitilization_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_Hospitilization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
-    CONSTRAINT `fk_Hospitilization_cost_calculation` FOREIGN KEY (`KEN`) REFERENCES `Cost_Calculation` (`KEN`),
-    CONSTRAINT `fk_Hospitilization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
-    CONSTRAINT `fk_Hospitilization_triage` FOREIGN KEY (`triage_id`) REFERENCES `Triage` (`triage_id`),
-    CONSTRAINT `fk_Hospitilization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`),
-    CONSTRAINT `fk_Hospitilization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`)
+    `hospitalization_cost` DECIMAL(8, 2),
+    PRIMARY KEY (`hospitalization_id`,`AMKA`, `admission_date`),
+    CONSTRAINT `fk_Hospitalization_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE,
+    CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
+    CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN`) REFERENCES `Cost_Calculation` (`KEN`),
+    CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
+    CONSTRAINT `fk_Hospitalization_triage` FOREIGN KEY (`triage_id`) REFERENCES `Triage` (`triage_id`),
+    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`),
+    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`)
 );
 
 DROP TABLE IF EXISTS `Patient`;
@@ -134,15 +143,6 @@ CREATE TABLE IF NOT EXISTS `Patient` (
     `occupation` VARCHAR(45) NOT NULL,
     `nationality` VARCHAR(45) NOT NULL,
     PRIMARY KEY (`AMKA`)
-);
-
-DROP TABLE IF EXISTS `Cost_Calculation`;
-
-CREATE TABLE IF NOT EXISTS `Cost_Calculation` (
-    `KEN` VARCHAR(5) NOT NULL,
-    `base_cost` INT NOT NULL,
-    `MDN` INT NOT NULL,    
-    PRIMARY KEY (`KEN`),
 );
 
 DROP TABLE IF EXISTS `Insurance_Type`;
@@ -185,7 +185,7 @@ DROP TABLE IF EXISTS Outcome;
 
 CREATE TABLE IF NOT EXISTS Outcome (
   outcome_id INT NOT NULL AUTO_INCREMENT,
-  outcome_description VARCHAR(45) NOT NULL ON DEFAULT 'Waiting',
+  outcome_description VARCHAR(45) NOT NULL DEFAULT 'Waiting',
   outcome_odhgies TEXT DEFAULT NULL,
   CONSTRAINT chk_outcome_description CHECK (outcome_description in ('Admitted', 'Discharged', 'Waiting')),
   PRIMARY KEY (outcome_id)
@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS Triage (
   hospitalization_id VARCHAR(11) DEFAULT NULL,
   department VARCHAR(45) NOT NULL,
   PRIMARY KEY(triage_id),
-  CONSTRAINT fk_Nurse FOREIGN KEY (nurse_AMKA) REFERENCES Nurse(nurse_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_Nurse FOREIGN KEY (nurse_id) REFERENCES Nurse(nurse_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_patient FOREIGN KEY (patient_AMKA) REFERENCES Patient(patient_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_outcome FOREIGN KEY (outcome) REFERENCES Outcome(outcome_id),
   CONSTRAINT fk_triage_hospitalization FOREIGN KEY (hospitalization_id) 
@@ -260,16 +260,6 @@ CREATE TABLE IF NOT EXISTS Operation_info(
   PRIMARY KEY (id)
 );
 
-DROP TABLE IF EXISTS Assistant_Staff;
-
-CREATE TABLE IF NOT EXISTS Assistant_Staff(
-  operation_id INT NOT NULL,
-  assistant_staff_id VARCHAR(11) NOT NULL,
-  PRIMARY KEY (operation_id, assistant_staff_id),
-  CONSTRAINT fk_operation FOREIGN KEY (operation_id) REFERENCES Operation(operation_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_assistant_staff FOREIGN KEY (assistant_staff_id) REFERENCES Staff(staff_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE, --Tha boruse na bei staff id  
-);
-
 DROP TABLE IF EXISTS Operation_room;
 
 CREATE TABLE IF NOT EXISTS Operation_room(
@@ -298,11 +288,21 @@ CREATE TABLE IF NOT EXISTS Operation(
   CHECK (start_time < expected_end_time)
 );
 
+DROP TABLE IF EXISTS Assistant_Staff;
+
+CREATE TABLE IF NOT EXISTS Assistant_Staff(
+  operation_id INT NOT NULL,
+  assistant_staff_id VARCHAR(11) NOT NULL,
+  PRIMARY KEY (operation_id, assistant_staff_id),
+  CONSTRAINT fk_operation FOREIGN KEY (operation_id) REFERENCES Operation(operation_id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_assistant_staff FOREIGN KEY (assistant_staff_id) REFERENCES Staff(staff_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE --Tha boruse na bei staff id  
+);
+
 --ratings
 
 DROP TABLE IF EXISTS Hospital_Evaluation;
 
-CREATE_TABLE IF NOT EXISTS Hospital_Evaluation(
+CREATE TABLE IF NOT EXISTS Hospital_Evaluation(
   hospital_evaluation_id INT NOT NULL AUTO_INCREMENT,
   hospitalization_id VARCHAR(11) NOT NULL UNIQUE,
   nurse_qualty INT NOT NULL, --1-5 OPOTE PAEI KAI TINYINT?
@@ -356,7 +356,7 @@ CREATE TABLE IF NOT EXISTS Patient_Allergy(
   patient_id VARCHAR(11) NOT NULL,
   active_subastance_allergy_name VARCHAR(45) NOT NULL,
   PRIMARY KEY(allergy_id),
-  CONSTRAINT 'fk_patient_id_allergy' FOREIGN KEY (patient_id) REFERENCES Patient(patient_AMKA) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_patient_id_allergy` FOREIGN KEY (patient_id) REFERENCES Patient(patient_AMKA) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 DROP TABLE IF EXISTS Prescription;
@@ -374,10 +374,10 @@ CREATE TABLE IF NOT EXISTS Prescription (
     product_autorization_country VARCHAR(255) NOT NULL,
     UNIQUE(doctor_AMKA, patient_AMKA, medicine_id, starting_date),
     PRIMARY KEY(prescription_id), -- OR PRIMARY KEY(doctor_AMKA, patient_AMKA, medicine_id, starting_date)
-    CONSTRAINT 'fk_patient_id_prescription' FOREIGN KEY(patient_AMKA) REFERENCES Patient(patient_AMKA),
-    CONSTRAINT 'fk_doctor_id_prescription' FOREIGN KEY(doctor_AMKA) REFERENCES Doctor(doctor_AMKA),
-    CONSTRAINT 'fk_medicine_id_prescription' FOREIGN KEY(medicine_id) REFERENCES Drug_Info_Active_Substance(id),
-    CONSTRAINT 'fk_hospitalization_id_prescription' FOREIGN KEY(hospitalization_id) REFERENCES Hospitalization(hospitalization_id),
+    CONSTRAINT `fk_patient_id_prescription` FOREIGN KEY(patient_AMKA) REFERENCES Patient(patient_AMKA),
+    CONSTRAINT `fk_doctor_id_prescription` FOREIGN KEY(doctor_AMKA) REFERENCES Doctor(doctor_AMKA),
+    CONSTRAINT `fk_medicine_id_prescription` FOREIGN KEY(medicine_id) REFERENCES Drug_Info_Active_Substance(id),
+    CONSTRAINT `fk_hospitalization_id_prescription` FOREIGN KEY(hospitalization_id) REFERENCES Hospitalization(hospitalization_id),
     CHECK(starting_date < end_date)
 );
 
@@ -551,7 +551,7 @@ END
 
 DROP TRIGGER IF EXISTS `check_hospitalization_dates_ins`;
 
-CREATE TRIGGER `check_hospitalization_dates_ins` BEFORE INSERT ON `Hospitilization`
+CREATE TRIGGER `check_hospitalization_dates_ins` BEFORE INSERT ON `Hospitalization`
 FOR EACH ROW
 BEGIN
     IF new.admission_date > new.discharge_date THEN
@@ -562,7 +562,7 @@ END
 
 DROP TRIGGER IF EXISTS `check_hospitalization_dates_upd`;
 
-CREATE TRIGGER `check_hospitalization_dates_upd` BEFORE UPDATE ON `Hospitilization`
+CREATE TRIGGER `check_hospitalization_dates_upd` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
 BEGIN
     IF new.admission_date > new.discharge_date THEN
@@ -573,7 +573,7 @@ END
 
 DROP TRIGGER IF EXISTS `check_discharge_data`;
 
-CREATE TRIGGER `check_discharge_data` BEFORE UPDATE ON `Hospitilization`
+CREATE TRIGGER `check_discharge_data` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
 BEGIN
     IF new.discharge_date IS NOT NULL AND old.discharge_date IS NULL THEN
@@ -586,7 +586,7 @@ END
 
 DROP TRIGGER IF EXISTS `set_bed_occupied`;
 
-CREATE TRIGGER `set_bed_occupied` AFTER INSERT ON `Hospitilization`
+CREATE TRIGGER `set_bed_occupied` AFTER INSERT ON `Hospitalization`
 FOR EACH ROW
 BEGIN
     UPDATE Beds
@@ -596,7 +596,7 @@ END
 
 DROP TRIGGER IF EXISTS `set_bed_available`;
 
-CREATE TRIGGER `set_bed_available` AFTER UPDATE ON `Hospitilization`
+CREATE TRIGGER `set_bed_available` AFTER UPDATE ON `Hospitalization`
 FOR EACH ROW
 BEGIN
     IF new.discharge_date IS NOT NULL THEN
@@ -608,7 +608,7 @@ END
 
 DROP TRIGGER IF EXISTS `check_bed_availability`;
 
-CREATE TRIGGER `check_bed_availability` BEFORE INSERT ON `Hospitilization`
+CREATE TRIGGER `check_bed_availability` BEFORE INSERT ON `Hospitalization`
 FOR EACH ROW
 BEGIN
     IF (SELECT status FROM Beds where id_number = new.bed_id_number) <> 'Available' THEN
@@ -1188,10 +1188,10 @@ END
 
 DROP TRIGGER IF EXISTS `calculate_total_cost`;
 
-CREATE TRIGGER `calculate_total_cost` BEFORE UPDATE ON `Hospitilization`
+CREATE TRIGGER `calculate_total_cost` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
 BEGIN
-    DECLARE v_total_hospitilization_days DATE;
+    DECLARE v_total_hospitalization_days DATE;
     DECLARE v_mdn INT;
     DECLARE v_base_cost DECIMAL(10, 2);
     DECLARE v_daily_cost DECIMAL(10, 2);
@@ -1200,16 +1200,16 @@ BEGIN
 
     SELECT MDN INTO v_mdn FROM Cost_Calculation WHERE KEN = NEW.KEN;
     SELECT base_cost INTO v_base_cost FROM Cost_Calculation WHERE KEN = NEW.KEN;
-    SELECT SUM(cost) INTO v_lab_costs FROM Lab_work_info WHERE id IN (SELECT lab_id FROM Lab_Work WHERE hospitilization_id = NEW.hospitilization.id); 
-    SELECT SUM(cost) INTO v_operation_costs FROM Operation_Info WHERE id IN (SELECT operation_type FROM Operation WHERE hospitilization_id = NEW.hospitilization_id);
+    SELECT SUM(cost) INTO v_lab_costs FROM Lab_work_info WHERE id IN (SELECT lab_id FROM Lab_Work WHERE hospitalization_id = NEW.hospitalization.id); 
+    SELECT SUM(cost) INTO v_operation_costs FROM Operation_Info WHERE id IN (SELECT operation_type FROM Operation WHERE hospitalization_id = NEW.hospitalization_id);
 
     SET v_total_hospitalization = DATEDIFF(NEW.discharge_date - NEW.admission_date);
     SET V_daily_cost = v_base_cost / v_mdn;
 
-    IF NEW.total_hospitilization_days = v_mdn THEN
-        SET hospitilization_cost = v_base_cost + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
+    IF NEW.total_hospitalization_days = v_mdn THEN
+        SET hospitalization_cost = v_base_cost + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
     ELSE
-        SET hospitilization_cost = v_base_cost + (v_total_hospitilization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
+        SET hospitalization_cost = v_base_cost + (v_total_hospitalization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
     END IF;
 END
 
@@ -1401,7 +1401,7 @@ CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
     IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
-        SIGNAL_SQLSTATE '45000'
+        SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'To perform operation patient must be hospitalized.';
     END IF;
 END$$
@@ -1411,7 +1411,7 @@ CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Lab_Work
 FOR EACH ROW
 BEGIN
     IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
-        SIGNAL_SQLSTATE '45000'
+        SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'To perform lab work patient must be hospitalized.';
     END IF;
 END$$
@@ -1465,7 +1465,6 @@ BEGIN
     DECLARE end_time DATETIME;
     SELECT start_time, expected_end_time INTO starts, end_time
     FROM Operation WHERE operation_id = NEW.operation_id;
-    --DECLARE surgeon_id_new VARCHAR(11);
     SELECT COUNT(*) INTO conflict FROM Operation WHERE (operation_id != NEW.operation_id) 
     AND (surgeon_id = NEW.assistant_staff_id) AND (expected_end_time > starts) AND (start_time < end_time);
     IF conflict > 0 THEN 
