@@ -351,7 +351,7 @@ CREATE TABLE IF NOT EXISTS Drug_Info_Active_Substance(
   pharmacovigilance_system_master_file_location VARCHAR(255) NOT NULL,
   pharmacovigilance_enquires_email_address VARCHAR(255) NOT NULL,
   pharmacovigilance_enquires_phone_number VARCHAR(255) NOT NULL,
-  PRIMARY KEY(id), --or PRIMARY KEY(product_name, country)
+  PRIMARY KEY(id),
   UNIQUE(product_name, active_substance, product_authorization_country)
 );
 
@@ -381,8 +381,8 @@ CREATE TABLE IF NOT EXISTS Prescription (
     product_autorization_country VARCHAR(255) NOT NULL,
     UNIQUE(doctor_AMKA, patient_AMKA, medicine_id, starting_date),
     PRIMARY KEY(prescription_id), -- OR PRIMARY KEY(doctor_AMKA, patient_AMKA, medicine_id, starting_date)
-    CONSTRAINT `fk_patient_id_prescription` FOREIGN KEY(AMKA) REFERENCES Patient(patient_AMKA),
-    CONSTRAINT `fk_doctor_id_prescription` FOREIGN KEY(AMKA) REFERENCES Doctor(doctor_AMKA),
+    CONSTRAINT `fk_patient_id_prescription` FOREIGN KEY(patient_AMKA) REFERENCES Patient(AMKA),
+    CONSTRAINT `fk_doctor_id_prescription` FOREIGN KEY(doctor_AMKA) REFERENCES Doctor(AMKA),
     CONSTRAINT `fk_medicine_id_prescription` FOREIGN KEY(medicine_id) REFERENCES Drug_Info_Active_Substance(id),
     CONSTRAINT `fk_hospitalization_id_prescription` FOREIGN KEY(hospitalization_id) REFERENCES Hospitalization(hospitalization_id),
     CHECK(starting_date < end_date)
