@@ -290,7 +290,7 @@ CREATE TABLE IF NOT EXISTS Operation(
   surgeon_id VARCHAR(11),
   CONSTRAINT fk_operation_hospitalization FOREIGN KEY (hospitalization_id) REFERENCES Hospitalization(hospitalization_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT fk_operation_type FOREIGN KEY (operation_type_id) REFERENCES Operation_info(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT fk_surgeon FOREIGN KEY (surgeon_id) REFERENCES Doctor(doctor_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_surgeon FOREIGN KEY (surgeon_id) REFERENCES Doctor(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_operation_room FOREIGN KEY (room_id) REFERENCES Operation_room(room_id) ON DELETE RESTRICT ON UPDATE CASCADE,
   CHECK (start_time < expected_end_time)
 );
@@ -302,7 +302,7 @@ CREATE TABLE IF NOT EXISTS Assistant_Staff(
   assistant_staff_id VARCHAR(11) NOT NULL,
   PRIMARY KEY (operation_id, assistant_staff_id),
   CONSTRAINT fk_operation FOREIGN KEY (operation_id) REFERENCES Operation(operation_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_assistant_staff FOREIGN KEY (assistant_staff_id) REFERENCES Staff(staff_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE --Tha boruse na bei staff id  
+  CONSTRAINT fk_assistant_staff FOREIGN KEY (assistant_staff_id) REFERENCES Staff(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE --Tha boruse na bei staff id  
 );
 
 -- ratings
@@ -311,7 +311,7 @@ DROP TABLE IF EXISTS Hospital_Evaluation;
 
 CREATE TABLE IF NOT EXISTS Hospital_Evaluation(
   hospital_evaluation_id INT NOT NULL AUTO_INCREMENT,
-  hospitalization_id VARCHAR(11) NOT NULL UNIQUE,
+  hospitalization_id INT NOT NULL UNIQUE,
   nurse_qualty INT NOT NULL, -- 1,5 OPOTE PAEI KAI TINYINT?
   cleanliness INT NOT NULL,
   food_quality INT NOT NULL,
@@ -329,12 +329,12 @@ DROP TABLE IF EXISTS Doctor_Evaluation;
 
 CREATE TABLE IF NOT EXISTS Doctor_Evaluation(
   doctor_evaluation_id INT NOT NULL AUTO_INCREMENT,
-  hospitalization_id VARCHAR(11) NOT NULL,
+  hospitalization_id INT NOT NULL,
   quality_of_care INT NOT NULL,
   doctor_id VARCHAR(11) NOT NULL,
   UNIQUE(doctor_id, hospitalization_id),
   CONSTRAINT fk_hospitalization_doctor_evaluation FOREIGN KEY (hospitalization_id) REFERENCES Hospitalization(hospitalization_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_doctor_evaluation FOREIGN KEY (doctor_id) REFERENCES Doctor(doctor_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_doctor_evaluation FOREIGN KEY (doctor_id) REFERENCES Doctor(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
   CHECK (quality_of_care in (1, 2, 3, 4, 5)),
   PRIMARY KEY (doctor_evaluation_id)
 );
@@ -363,7 +363,7 @@ CREATE TABLE IF NOT EXISTS Patient_Allergy(
   patient_id VARCHAR(11) NOT NULL,
   active_subastance_allergy_name VARCHAR(45) NOT NULL,
   PRIMARY KEY(allergy_id),
-  CONSTRAINT `fk_patient_id_allergy` FOREIGN KEY (patient_id) REFERENCES Patient(patient_AMKA) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_patient_id_allergy` FOREIGN KEY (patient_id) REFERENCES Patient(AMKA) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 DROP TABLE IF EXISTS Prescription;
@@ -381,8 +381,8 @@ CREATE TABLE IF NOT EXISTS Prescription (
     product_autorization_country VARCHAR(255) NOT NULL,
     UNIQUE(doctor_AMKA, patient_AMKA, medicine_id, starting_date),
     PRIMARY KEY(prescription_id), -- OR PRIMARY KEY(doctor_AMKA, patient_AMKA, medicine_id, starting_date)
-    CONSTRAINT `fk_patient_id_prescription` FOREIGN KEY(patient_AMKA) REFERENCES Patient(patient_AMKA),
-    CONSTRAINT `fk_doctor_id_prescription` FOREIGN KEY(doctor_AMKA) REFERENCES Doctor(doctor_AMKA),
+    CONSTRAINT `fk_patient_id_prescription` FOREIGN KEY(AMKA) REFERENCES Patient(patient_AMKA),
+    CONSTRAINT `fk_doctor_id_prescription` FOREIGN KEY(AMKA) REFERENCES Doctor(doctor_AMKA),
     CONSTRAINT `fk_medicine_id_prescription` FOREIGN KEY(medicine_id) REFERENCES Drug_Info_Active_Substance(id),
     CONSTRAINT `fk_hospitalization_id_prescription` FOREIGN KEY(hospitalization_id) REFERENCES Hospitalization(hospitalization_id),
     CHECK(starting_date < end_date)
