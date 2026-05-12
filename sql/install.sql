@@ -203,8 +203,8 @@ DROP TABLE IF EXISTS Triage;
 
 CREATE TABLE IF NOT EXISTS Triage (
   triage_id INT NOT NULL AUTO_INCREMENT, 
-  patient_AMKA VARCHAR(11) NOT NULL,
-  nurse_id VARCHAR(11) NOT NULL,
+  patient_AMKA CHAR(11) NOT NULL,
+  nurse_id CHAR(11) NOT NULL,
   arrival_time DATETIME NOT NULL,
   symptoms TEXT NOT NULL, 
   urgency_level INT NOT NULL,
