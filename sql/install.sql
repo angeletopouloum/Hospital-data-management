@@ -383,7 +383,7 @@ CREATE TABLE IF NOT EXISTS Prescription (
 
 DELIMITER $$
 
-DROP TRIGGER IF EXISTS `check_department_head_ins`;
+DROP TRIGGER IF EXISTS check_department_head_ins;
 
 CREATE TRIGGER `check_department_head_ins` BEFORE INSERT ON `Department`
 FOR EACH ROW
@@ -1275,37 +1275,36 @@ END
 CREATE TRIGGER calculate_position_triage BEFORE INSERT ON Triage
 FOR EACH ROW
 BEGIN
-  DECLARE queue_length INT DEFAULT 0;
-  SELECT COUNT(*) + 1 INTO queue_length FROM Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id 
-  WHERE outc.outcome_name = 'Waiting' AND (tr.urgency_level < NEW.urgency_level) OR ((tr.urgency_level = NEW.urgency_level) AND (tr.arrival_time < NEW.arrival_time));
-  SET NEW.position = queue_length;
+    DECLARE queue_length INT DEFAULT 0;
+    SELECT COUNT(*) + 1 INTO queue_length FROM Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id 
+    WHERE outc.outcome_name = 'Waiting' AND (tr.urgency_level < NEW.urgency_level) OR ((tr.urgency_level = NEW.urgency_level) AND (tr.arrival_time < NEW.arrival_time));
+    SET NEW.position = queue_length;
 END$$
   
 --CHECK POSITION AFTER UPDATE
 CREATE TRIGGER calculate_position_triage_upd AFTER UPDATE ON Triage
 FOR EACH ROW
 BEGIN
-  DECLARE old_outcome VARCHAR(45);
-  DECLARE new_outcome VARCHAR(45);
-  SELECT outcome_name INTO old_outcome FROM Outcome WHERE outcome_id = OLD.outcome_id;
-  SELECT outcome_name INTO new_outcome FROM Outcome WHERE outcome_id = new.outcome_id;
-  IF old_outcome_name = 'Waiting' AND new_outcome_name != 'Waiting' THEN
-    UPDATE Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id SET tr.position = tr.position -1
-    WHERE outc.outcome_name = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
-  END IF;
+    DECLARE old_outcome VARCHAR(45);
+    DECLARE new_outcome VARCHAR(45);
+    SELECT outcome_name INTO old_outcome FROM Outcome WHERE outcome_id = OLD.outcome_id;
+    SELECT outcome_name INTO new_outcome FROM Outcome WHERE outcome_id = new.outcome_id;
+    IF old_outcome = 'Waiting' AND new_outcome != 'Waiting' THEN
+        UPDATE Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id SET tr.position = tr.position -1
+        WHERE outc.outcome_name = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
+    END IF;
 END$$
-
 
 CREATE TRIGGER finished_hospitalization_evaluation BEFORE INSERT ON Hospital_Evaluation
 FOR EACH ROW
 BEGIN
-  DECLARE discharge_date DATE;
-  SELECT discharge_date INTO discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id;
-  IF discharge_date IS NULL
-  OR discharge_date > NEW.eval_date THEN
-    SIGNAL SQLSTATE '45000' 
-      SET MESSAGE_TEXT = 'Cannot evaluate hospital experience before discharge';
-  END IF;
+    DECLARE discharge_date DATE;
+    SELECT discharge_date INTO discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id;
+    IF discharge_date IS NULL
+    OR discharge_date > NEW.eval_date THEN
+        SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Cannot evaluate hospital experience before discharge';
+    END IF;
 END$$
 
 CREATE TRIGGER finished_doctor_evaluation BEFORE INSERT ON Doctor_Evaluation
@@ -1324,173 +1323,133 @@ END$$
 CREATE TRIGGER doctor_evaluation_prescription_check BEFORE INSERT ON Doctor_Evaluation
 FOR EACH ROW
 BEGIN
-  DECLARE has_prescribed INT;
-  SELECT COUNT(*) INTO has_prescribed
-  FROM Prescription
-  WHERE doctor_AMKA = NEW.doctor_id AND hospitalization_id = NEW.hospitalization_id;
-  IF has_prescribed = 0 THEN
-    SIGNAL SQLSTATE '45000' 
-      SET MESSAGE_TEXT = 'Δεν γίνεται να αξιολογήσετε χωρίς να σας έχει συνταγογραφήσει σε αυτή τη νοσηλεία.';
-  END IF;
+    DECLARE has_prescribed INT;
+    SELECT COUNT(*) INTO has_prescribed
+    FROM Prescription
+    WHERE doctor_AMKA = NEW.doctor_id AND hospitalization_id = NEW.hospitalization_id;
+    IF has_prescribed = 0 THEN
+        SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Δεν γίνεται να αξιολογήσετε χωρίς να σας έχει συνταγογραφήσει σε αυτή τη νοσηλεία.';
+    END IF;
 END$$
 
 --CHECK LAB_WORK RESULTS: MUST CONTAIN EITHER ARITHMETIC VALUES OR TEXT OR BOTH
 CREATE TRIGGER lab_work_result BEFORE INSERT ON Lab_Work
 FOR EACH ROW
 BEGIN
-  IF (NEW.lab_result_value IS NOT NULL AND NEW.lab_result_units IS NULL) OR (NEW.lab_result_value IS NULL AND NEW.lab_result_units IS NOT NULL) THEN
-    SIGNAL SQLSTATE '45000' 
-      SET MESSAGE_TEXT = 'Lab result value and units must be provided together';
-  END IF;
-  IF (NEW.lab_result_value IS NULL AND NEW.lab_result_text IS NULL) THEN
-    SIGNAL SQLSTATE '45000' 
-      SET MESSAGE_TEXT = 'Either lab result value with units or result text must be provided';
-  END IF;
+    IF (NEW.lab_result_value IS NOT NULL AND NEW.lab_result_units IS NULL) OR (NEW.lab_result_value IS NULL AND NEW.lab_result_units IS NOT NULL) THEN
+        SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Lab result value and units must be provided together';
+    END IF;
+    IF (NEW.lab_result_value IS NULL AND NEW.lab_result_text IS NULL) THEN
+        SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Either lab result value with units or result text must be provided';
+    END IF;
 END$$
 
 --CHECK IF MAIN DOCTOR FOR OPERATION IS ACTUALLY A SURGEON
 CREATE TRIGGER main_doctor_operation BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
-  DECLARE has_specialty VARCHAR(45);
-  SELECT specialty INTO has_specialty
-  FROM Doctor
-  WHERE doctor_AMKA = NEW.surgeon_id;
-  IF has_specialty != 'Surgeon' THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Main doctor for operation must be a surgeon.';
-  END IF;
+    DECLARE has_specialty VARCHAR(45);
+    SELECT specialty INTO has_specialty
+    FROM Doctor
+    WHERE doctor_AMKA = NEW.surgeon_id;
+    IF has_specialty != 'Surgeon' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Main doctor for operation must be a surgeon.';
+    END IF;
 END$$
 
 --CHECK IF OPERATION ROOM IS NOT FOR SURGERY AND IF SURGEON IS ASSIGNED
 CREATE TRIGGER check_operation_room_type BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN 
-  DECLARE room_type_variable VARCHAR(45);
-  SELECT room_type INTO room_type_variable
-  FROM Operation_room WHERE room_id = NEW.room_id;
-  IF (room_type_variable != 'Χειρουργείο' AND NEW.surgeon_id IS NOT NULL) THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Οι χειρουργοί κάνουν μόνο επεμβάσεις, όχι ιατρικές πράξεις.';
-  END IF;
+    DECLARE room_type_variable VARCHAR(45);
+    SELECT room_type INTO room_type_variable
+    FROM Operation_room WHERE room_id = NEW.room_id;
+    IF (room_type_variable != 'Χειρουργείο' AND NEW.surgeon_id IS NOT NULL) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Οι χειρουργοί κάνουν μόνο επεμβάσεις, όχι ιατρικές πράξεις.';
+    END IF;
 END$$
 
 --CHECK IF PATIENT IS HOSPITALIZED FOR OPERATIONS AND LAB WORK
 CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
-  IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
-    SIGNAL_SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'To perform operation patient must be hospitalized.';
-  END IF;
+    IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
+        SIGNAL_SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'To perform operation patient must be hospitalized.';
+    END IF;
 END$$
 
 --edw mporw na prosthesw to discharge date an einai megalutero apo to start date ths epemvashs
 CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Lab_Work
 FOR EACH ROW
 BEGIN
-  IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
-    SIGNAL_SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'To perform lab work patient must be hospitalized.';
-  END IF;
+    IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
+        SIGNAL_SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'To perform lab work patient must be hospitalized.';
+    END IF;
 END$$
 
 CREATE TRIGGER occupied_operation_room BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
-  DECLARE conflict INT;
-  SELECT COUNT(*) INTO conflict FROM Operation WHERE room_id = NEW.room_id AND (expected_end_time > NEW.start_time) AND (start_time < NEW.expected_end_time);
-  IF conflict > 0 THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Operation room is occupied.';
-  END IF;
+    DECLARE conflict INT;
+    SELECT COUNT(*) INTO conflict FROM Operation WHERE room_id = NEW.room_id AND (expected_end_time > NEW.start_time) AND (start_time < NEW.expected_end_time);
+    IF conflict > 0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Operation room is occupied.';
+    END IF;
 END$$
 
 CREATE TRIGGER occupied_surgeon BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
-  DECLARE conflict INT;
-  SELECT COUNT(*) INTO conflict FROM Operation WHERE surgeon_id = NEW.surgeon_id AND (expected_end_time > NEW.start_time) AND (start_time < NEW.expected_end_time);
-  IF conflict > 0 THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Surgeon is busy.';
-  END IF;
+    DECLARE conflict INT;
+    SELECT COUNT(*) INTO conflict FROM Operation WHERE surgeon_id = NEW.surgeon_id AND (expected_end_time > NEW.start_time) AND (start_time < NEW.expected_end_time);
+    IF conflict > 0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Surgeon is busy.';
+    END IF;
 END$$
 
 CREATE TRIGGER occupied_assistant_staff BEFORE INSERT ON Assistant_Staff
 FOR EACH ROW
 BEGIN
-  DECLARE conflicts INT DEFAULT 0;
-  DECLARE starts DATETIME;
-  DECLARE end_time DATETIME;
-  SELECT start_time, expected_end_time INTO starts, end_time
-  FROM Operation WHERE operation_id = NEW.operation_id;
+    DECLARE conflicts INT DEFAULT 0;
+    DECLARE starts DATETIME;
+    DECLARE end_time DATETIME;
+    SELECT start_time, expected_end_time INTO starts, end_time
+    FROM Operation WHERE operation_id = NEW.operation_id;
 
-  SELECT COUNT(*) INTO conflicts
-  FROM Assistant_Staff staff
-  JOIN Operation op ON staff.operation_id = op.operation_id
-  WHERE (staff.assistant_staff_id = NEW.assistant_staff_id) AND (op.expected_end_time > starts) AND (op.start_time < end_time);
-  IF conflicts >0 THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Assistant staff busy.';
-  END IF;
+    SELECT COUNT(*) INTO conflicts
+    FROM Assistant_Staff staff
+    JOIN Operation op ON staff.operation_id = op.operation_id
+    WHERE (staff.assistant_staff_id = NEW.assistant_staff_id) AND (op.expected_end_time > starts) AND (op.start_time < end_time);
+    IF conflicts >0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Assistant staff busy.';
+    END IF;
 END$$
 
 CREATE TRIGGER check_surgeon_on_assistant_staff BEFORE INSERT ON Assistant_Staff
 FOR EACH ROW
 BEGIN
-  DECLARE conflict INT DEFAULT 0;
-  DECLARE starts DATETIME;
-  DECLARE end_time DATETIME;
-  SELECT start_time, expected_end_time INTO starts, end_time
-  FROM Operation WHERE operation_id = NEW.operation_id;
-  --DECLARE surgeon_id_new VARCHAR(11);
-  SELECT COUNT(*) INTO conflict FROM Operation WHERE (operation_id != NEW.operation_id) 
-  AND (surgeon_id = NEW.assistant_staff_id) AND (expected_end_time > starts) AND (start_time < end_time);
-  IF conflict > 0 THEN 
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Assistant staff cannot be the main surgeon.';
-  END IF;
-END
-
---CHECK IF PATIENT HOSPITALIZED IN ORDER TO GET PRESCRIBED
-CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Prescription
-FOR EACH ROW
-BEGIN
-  IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
-    SIGNAL_SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'To prescribe medicines, patient must be hospitalized.';
-  END IF;
-END$$
-
-
-DROP TRIGGER IF EXISTS `check_allergies_upd`;
---CHECK IF PATIENT OR MEDICINE CHANGED, WE DONT MIND UPDATING THE REST
-CREATE TRIGGER `check_allergies_upd` BEFORE UPDATE ON Prescription
-FOR EACH ROW
-BEGIN
-  DECLARE is_allergic INT DEAFULT 0;
-  IF (NEW.medication_id != OLD.medication_id) OR (NEW.patient_AMKA!=OLD.patient_AMKA) THEN
-    SELECT COUNT(*) INTO is_allergic FROM Drug_Info_Active_Substance drug JOIN Patient_Allergy allergy ON drug.active_substance = allergy.active_substance_allergy_name
-    WHERE (drug.id = NEW.medicine_id) AND (allergy.patiend_id = NEW.patient_AMKA);
-    IF is_allergic > 0 THEN
-      SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Updated medicine or patient caused allergy flag.'
+    DECLARE conflict INT DEFAULT 0;
+    DECLARE starts DATETIME;
+    DECLARE end_time DATETIME;
+    SELECT start_time, expected_end_time INTO starts, end_time
+    FROM Operation WHERE operation_id = NEW.operation_id;
+    --DECLARE surgeon_id_new VARCHAR(11);
+    SELECT COUNT(*) INTO conflict FROM Operation WHERE (operation_id != NEW.operation_id) 
+    AND (surgeon_id = NEW.assistant_staff_id) AND (expected_end_time > starts) AND (start_time < end_time);
+    IF conflict > 0 THEN 
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Assistant staff cannot be the main surgeon.';
     END IF;
-END$$
-
-DROP TRIGGER IF EXISTS `check_allergies_ins`;
---edw ginetai kai me if exists gia na mhn xanw xrono na apothhkeuw sto is_allergic kai na metraw ola ta instances
-CREATE TRIGGER `check_allergies_ins` BEFORE INSERT ON Prescription
-FOR EACH ROW
-BEGIN
-  DECLARE is_allergic INT DEFAULT 0;
-  SELECT COUNT(*) INTO is_allergic FROM Drug_Info_Active_Substance drug JOIN Patient_Allergy allergy ON drug.active_substance = allergy.active_substance_allergy_name
-  WHERE (drug.id = NEW.medicine_id) AND (allergy.patient_id = NEW.patient_AMKA);
-  IF is_allergic > 0 THEN 
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Patient is allergic to this drug.';
-  END IF;
 END
 
 $$
