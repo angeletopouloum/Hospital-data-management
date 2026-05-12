@@ -808,7 +808,7 @@ BEGIN
 END$$
 
 CREATE TRIGGER `set_shift_validity_ins` BEFORE INSERT ON `Shifts`
-FOR EACH ROW PRECEDES `check_shift_type_ins`
+FOR EACH ROW
 BEGIN
     IF CURDATE() > NEW.start_date THEN
         SIGNAL SQLSTATE '45000'
@@ -819,7 +819,7 @@ BEGIN
 END$$
 
 CREATE TRIGGER `set_shift_validity_upd` BEFORE UPDATE ON `Shifts`
-FOR EACH ROW PRECEDES `check_shift_type_upd`
+FOR EACH ROW
 BEGIN
     IF CURDATE() > NEW.start_date THEN
         SIGNAL SQLSTATE '45000'
@@ -830,7 +830,7 @@ BEGIN
 END$$
 
 CREATE TRIGGER `check_shift_type_ins` BEFORE INSERT ON `Shifts`
-FOR EACH ROW PRECEDES `check_night_shift_validity_ins`
+FOR EACH ROW FOLLOWS `set_shift_validity_ins`
 BEGIN
     IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
         SET NEW.shift_type = 'Morning';
@@ -845,7 +845,7 @@ BEGIN
 END$$
 
 CREATE TRIGGER `check_shift_type_upd` BEFORE UPDATE ON `Shifts`
-FOR EACH ROW PRECEDES `check_night_shift_validity_upd`
+FOR EACH ROW FOLLOWS `set_shift_validity_upd`
 BEGIN
     IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
         SET NEW.shift_type = 'Morning';
