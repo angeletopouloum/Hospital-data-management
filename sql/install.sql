@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `Prescription` (
     `patient_AMKA` CHAR(11) NOT NULL UNIQUE,
     `doctor_AMKA` CHAR(11) NOT NULL UNIQUE,
     `medicine_name` VARCHAR(45) NOT NULL UNIQUE,
-    `active_substance` VARCHAR(255) NOT NULL,
+    `active_substance` VARCHAR(255) NOT NULL, --pisteuw prepei na vgei giati exw allo table
     `product_autorization_country` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`prescription_id`, `medicine_name`, `patient_AMKA`, `doctor_AMKA`),
     CONSTRAINT `fk_Prescription_Patient` FOREIGN KEY (`patient_AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE,
