@@ -1091,7 +1091,7 @@ BEGIN
     SELECT SUM(cost) INTO v_lab_costs FROM Lab_work_info WHERE id IN (SELECT lab_id FROM Lab_Work WHERE hospitalization_id = NEW.hospitalization.id); 
     SELECT SUM(cost) INTO v_operation_costs FROM Operation_Info WHERE id IN (SELECT operation_type FROM Operation WHERE hospitalization_id = NEW.hospitalization_id);
 
-    SET v_total_hospitalization = DATEDIFF(NEW.discharge_date - NEW.admission_date);
+    SET v_total_hospitalization = DATEDIFF(NEW.discharge_date, NEW.admission_date);
     SET V_daily_cost = v_base_cost / v_mdn;
 
     IF NEW.total_hospitalization_days = v_mdn THEN
