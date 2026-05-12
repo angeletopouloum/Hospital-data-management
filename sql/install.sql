@@ -703,10 +703,7 @@ BEGIN
             UPDATE Doctor
             SET monthly_shifts_worked = IFNULL(monthly_shifts_worked, 0) + 1,
                 consecutive_night_shifts = 
-                    CASE WHEN NEW.shift_type = 'Night' 
-                        THEN IFNULL(consecutive_night_shifts, 0) + 1
-                        ELSE 0
-                    END CASE;
+                    CASE WHEN NEW.shift_type = 'Night' THEN IFNULL(consecutive_night_shifts, 0) + 1 ELSE 0 END
             WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         ELSEIF s_type = 'Nurse' THEN
             UPDATE Nurse
@@ -715,7 +712,7 @@ BEGIN
                     CASE WHEN NEW.shift_type = 'Night' 
                         THEN IFNULL(consecutive_night_shifts, 0) + 1
                         ELSE 0
-                    END CASE;
+                    END
             WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         ELSEIF s_type = 'Administrative Staff' THEN
             UPDATE Administrative_Staff
@@ -724,7 +721,7 @@ BEGIN
                     CASE WHEN NEW.shift_type = 'Night' 
                         THEN IFNULL(consecutive_night_shifts, 0) + 1
                         ELSE 0
-                    END CASE;
+                    END
             WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         END IF; 
     END IF;
@@ -744,7 +741,7 @@ BEGIN
                     CASE WHEN NEW.shift_type = 'Night' 
                         THEN IFNULL(consecutive_night_shifts, 0) + 1
                         ELSE 0
-                    END CASE;
+                    END
             WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         ELSEIF s_type = 'Nurse' THEN
             UPDATE Nurse
@@ -753,7 +750,7 @@ BEGIN
                     CASE WHEN NEW.shift_type = 'Night' 
                         THEN IFNULL(consecutive_night_shifts, 0) + 1
                         ELSE 0
-                    END CASE;
+                    END
             WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         ELSEIF s_type = 'Administrative Staff' THEN
             UPDATE Administrative_Staff
@@ -762,7 +759,7 @@ BEGIN
                     CASE WHEN NEW.shift_type = 'Night' 
                         THEN IFNULL(consecutive_night_shifts, 0) + 1
                         ELSE 0
-                    END CASE;
+                    END
             WHERE staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
         END IF; 
     END IF;
@@ -1049,7 +1046,7 @@ BEGIN
                 CASE WHEN OLD.shift_type = 'Night' 
                     THEN consecutive_night_shifts - 1
                     ELSE calculate_consecutive_night_shifts(OLD.staff_id, OLD.start_date)
-                END CASE;
+                END
         WHERE staff_id = OLD.staff_id AND AMKA = OLD.staff_AMKA;
     ELSEIF s_type = 'Nurse' THEN
         UPDATE Nurse
@@ -1058,7 +1055,7 @@ BEGIN
                 CASE WHEN OLD.shift_type = 'Night' 
                     THEN consecutive_night_shifts - 1
                     ELSE calculate_consecutive_night_shifts(OLD.staff_id, OLD.start_date)
-                END CASE;
+                END
         WHERE staff_id = OLD.staff_id AND AMKA = OLD.staff_AMKA;
     ELSEIF s_type = 'Administrative Staff' THEN
         UPDATE Administrative_Staff
@@ -1067,7 +1064,7 @@ BEGIN
                 CASE WHEN OLD.shift_type = 'Night' 
                     THEN consecutive_night_shifts - 1
                     ELSE calculate_consecutive_night_shifts(OLD.staff_id, OLD.start_date)
-                END CASE;
+                END
         WHERE staff_id = OLD.staff_id AND AMKA = OLD.staff_AMKA;
     END IF; 
 END$$
