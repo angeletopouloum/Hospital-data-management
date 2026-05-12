@@ -1025,5 +1025,85 @@ BEGIN
     END IF;
 END
 
+CREATE TRIGGER `check_if_on_call_surgeon_ins` BEFORE INSERT ON `Operation`
+FOR EACH ROW
+BEGIN
+    DECLARE v_shift_date DATE;
+    DECLARE v_shift_start TIME;
+    DECLARE v_shift_end TIME;
+
+    SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.sugeon_id ORDER BY timestamp DESC LIMIT 1;
+
+    IF v_shift_date IS NOT NULL AND v_shift_start IS NOT NULL AND v_shift_end IS NOT NULL THEN
+        IF v_shift_date <> DATE(NEW.start_time) OR v_shift_start > TIME(NEW.start_time) OR v_shift_end < TIME(NEW.expected_end_time) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'The assigned surgeon must have a shift registered at the time of the operation.';
+        END IF;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The specified surgeon does not have registered shifts.';
+    END IF;
+END 
+
+CREATE TRIGGER `check_if_on_call_surgeon_upd` BEFORE UPDATE ON `Operation`
+FOR EACH ROW
+BEGIN
+    DECLARE v_shift_date DATE;
+    DECLARE v_shift_start TIME;
+    DECLARE v_shift_end TIME;
+
+    SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.sugeon_id ORDER BY timestamp DESC LIMIT 1;
+
+    IF v_shift_date IS NOT NULL AND v_shift_start IS NOT NULL AND v_shift_end IS NOT NULL THEN
+        IF v_shift_date <> DATE(NEW.start_time) OR v_shift_start > TIME(NEW.start_time) OR v_shift_end < TIME(NEW.expected_end_time) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'The assigned surgeon must have a shift registered at the time of the operation.';
+        END IF;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The specified surgeon does not have registered shifts.';
+    END IF;
+END 
+
+CREATE TRIGGER `check_if_on_call_staff_ins` BEFORE INSERT ON `Assistant_Staff`
+FOR EACH ROW
+BEGIN
+    DECLARE v_shift_date DATE;
+    DECLARE v_shift_start TIME;
+    DECLARE v_shift_end TIME;
+
+    SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.assistant_staff_id ORDER BY timestamp DESC LIMIT 1;
+
+    IF v_shift_date IS NOT NULL AND v_shift_start IS NOT NULL AND v_shift_end IS NOT NULL THEN
+        IF v_shift_date <> DATE(NEW.start_time) OR v_shift_start > TIME(NEW.start_time) OR v_shift_end < TIME(NEW.expected_end_time) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'The assigned staff must have a shift registered at the time of the operation.';
+        END IF;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The specified staff member does not have registered shifts.';
+    END IF;
+END 
+
+CREATE TRIGGER `check_if_on_call_staff_upd` BEFORE UPDATE ON `Assistant_Staff`
+FOR EACH ROW
+BEGIN
+    DECLARE v_shift_date DATE;
+    DECLARE v_shift_start TIME;
+    DECLARE v_shift_end TIME;
+
+    SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.assistant_staff_id ORDER BY timestamp DESC LIMIT 1;
+
+    IF v_shift_date IS NOT NULL AND v_shift_start IS NOT NULL AND v_shift_end IS NOT NULL THEN
+        IF v_shift_date <> DATE(NEW.start_time) OR v_shift_start > TIME(NEW.start_time) OR v_shift_end < TIME(NEW.expected_end_time) THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'The assigned staff must have a shift registered at the time of the operation.';
+        END IF;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'The specified staff member does not have registered shifts.';
+    END IF;
+END 
+
 $$
 DELIMITER;
