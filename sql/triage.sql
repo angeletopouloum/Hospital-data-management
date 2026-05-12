@@ -290,3 +290,50 @@ BEGIN
   END IF;
 END$$
 
+CREATE TRIGGER occupied_surgeon BEFORE INSERT ON Operation
+FOR EACH ROW
+BEGIN
+  DECLARE conflict INT;
+  SELECT COUNT(*) INTO conflict FROM Operation WHERE surgeon_id = NEW.surgeon_id AND (expected_end_time > NEW.start_time) AND (start_time < NEW.expected_end_time);
+  IF conflict > 0 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Surgeon is busy.';
+  END IF;
+END$$
+
+CREATE TRIGGER occupied_assistant_staff BEFORE INSERT ON Assistant_Staff
+FOR EACH ROW
+BEGIN
+  DECLARE conflicts INT DEFAULT 0;
+  DECLARE starts DATETIME;
+  DECLARE end_time DATETIME;
+  SELECT start_time, expected_end_time INTO starts, end_time
+  FROM Operation WHERE operation_id = NEW.operation_id;
+
+  SELECT COUNT(*) INTO conflicts
+  FROM Assistant_Staff staff
+  JOIN Operation op ON staff.operation_id = op.operation_id
+  WHERE (staff.assistant_staff_id = NEW.assistant_staff_id) AND (op.expected_end_time > starts) AND (op.start_time < end_time);
+  IF conflicts >0 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Assistant staff busy.';
+  END IF;
+END$$
+
+CREATE TRIGGER check_surgeon_on_assistant_staff BEFORE INSERT ON Assistant_Staff
+FOR EACH ROW
+BEGIN
+  DECLARE conflict INT DEFAULT 0;
+  DECLARE starts DATETIME;
+  DECLARE end_time DATETIME;
+  SELECT start_time, expected_end_time INTO starts, end_time
+  FROM Operation WHERE operation_id = NEW.operation_id;
+  --DECLARE surgeon_id_new VARCHAR(11);
+  SELECT COUNT(*) INTO conflict FROM Operation WHERE (operation_id != NEW.operation_id) 
+  AND (surgeon_id = NEW.assistant_staff_id) AND (expected_end_time > starts) AND (start_time < end_time);
+  IF conflict > 0 THEN 
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Assistant staff cannot be the main surgeon.';
+  END IF;
+END$$
+
