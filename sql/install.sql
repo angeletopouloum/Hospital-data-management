@@ -407,8 +407,6 @@ DROP TRIGGER IF EXISTS `check_discharge_data`;
 DROP TRIGGER IF EXISTS `set_bed_occupied`;
 DROP TRIGGER IF EXISTS `set_bed_available`;
 DROP TRIGGER IF EXISTS `check_bed_availability`;
-DROP TRIGGER IF EXISTS `check_medicine_upd`;
-DROP TRIGGER IF EXISTS `check_medicine_ins`;
 DROP TRIGGER IF EXISTS `check_prescription_dates_upd`;
 DROP TRIGGER IF EXISTS `check_prescription_dates_ins`;
 DROP FUNCTION IF EXISTS `calculate_shift_members`;
@@ -633,32 +631,6 @@ BEGIN
     IF (SELECT status FROM Beds where id_number = new.bed_id_number) <> 'Available' THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The selected bed is not available.';
-    END IF;
-END$$
-
-CREATE TRIGGER `check_medicine_upd` BEFORE UPDATE ON `Medicine`
-FOR EACH ROW
-BEGIN
-    IF EXISTS (SELECT * FROM Medicine WHERE ema_code = new.ema_code AND product_name <> new.product_name) THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'No two medicines can have the same EMA code but different product names.';
-    END IF;
-    IF EXISTS (SELECT * FROM Medicine WHERE ema_code <> new.ema_code AND product_name = new.product_name) THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
-    END IF;
-END$$
-
-CREATE TRIGGER `check_medicine_ins` BEFORE INSERT ON `Medicine`
-FOR EACH ROW
-BEGIN
-    IF EXISTS (SELECT * FROM Medicine WHERE ema_code = new.ema_code AND product_name <> new.product_name) THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'No two medicines can have the same EMA code but different product names.';
-    END IF;
-    IF EXISTS (SELECT * FROM Medicine WHERE ema_code <> new.ema_code AND product_name = new.product_name) THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'No two medicines can have the same product name but different EMA codes.';
     END IF;
 END$$
 
