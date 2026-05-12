@@ -765,45 +765,6 @@ BEGIN
         END IF; 
     END IF;
 END$$
-CREATE TRIGGER `schedule_shift_on_duty_ins` AFTER INSERT ON `Shifts`
-FOR EACH ROW
-BEGIN
-    IF calculate_shift_members(NEW.shift_id, NEW.start_time, NEW.start_date) THEN
-        SET NEW.shift_status = 'Scheduled'
-    END IF;
-END$$
-
-CREATE TRIGGER `schedule_shift_on_duty_upd` AFTER UPDATE ON `Shifts`
-FOR EACH ROW
-BEGIN
-    IF calculate_shift_members(NEW.shift_id, NEW.start_time, NEW.start_date) THEN
-        SET NEW.shift_status = 'Scheduled'
-    END IF;
-END$$
-
-CREATE TRIGGER `check_for_senior_doctor_upd` BEFORE UPDATE ON `Shifts`
-FOR EACH ROW
-BEGIN
-    DECLARE v_dept INT;
-    SELECT department_code INTO v_dept FROM Doctor WHERE AMKA = NEW.staff_AMKA;
-
-    IF NOT f_check_for_senior_doctor(NEW.staff_id, NEW.start_time, NEW.start_date, v_dept) THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
-    END IF;
-END$$
-
-CREATE TRIGGER `check_for_senior_doctor_ins` BEFORE INSERT ON `Shifts`
-FOR EACH ROW
-BEGIN
-    DECLARE v_dept INT;
-    SELECT department_code INTO v_dept FROM Doctor WHERE AMKA = NEW.staff_AMKA;
-
-    IF NOT f_check_for_senior_doctor(NEW.staff_id, NEW.start_time, NEW.start_date, v_dept) THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
-    END IF;
-END$$
 
 CREATE TRIGGER `set_shift_validity_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -812,8 +773,6 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Shift start date cannot be in the past.';
     END IF;
-
-    SET NEW.shift_status = 'Draft';
 END$$
 
 CREATE TRIGGER `set_shift_validity_upd` BEFORE UPDATE ON `Shifts`
@@ -823,8 +782,42 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Shift start date cannot be in the past.';
     END IF;
-    
-    SET NEW.shift_status = 'Draft';
+END$$
+
+CREATE TRIGGER `check_for_senior_doctor_upd` BEFORE UPDATE ON `Shifts`
+FOR EACH ROW FOLLOWS `set_shift_validity_upd`
+BEGIN
+    DECLARE v_dept INT;
+    SELECT department_code INTO v_dept FROM Doctor WHERE AMKA = NEW.staff_AMKA;
+
+    IF NOT f_check_for_senior_doctor(NEW.staff_id, NEW.start_time, NEW.start_date, v_dept) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
+    END IF;
+
+    IF calculate_shift_members(NEW.shift_id, NEW.start_time, NEW.start_date) THEN
+        SET NEW.shift_status = 'Scheduled';
+    ELSE
+        SET NEW.shift_status = 'Draft';
+    END IF;
+END$$
+
+CREATE TRIGGER `check_for_senior_doctor_ins` BEFORE INSERT ON `Shifts`
+FOR EACH ROW FOLLOWS `set_shift_validity_ins`
+BEGIN
+    DECLARE v_dept INT;
+    SELECT department_code INTO v_dept FROM Doctor WHERE AMKA = NEW.staff_AMKA;
+
+    IF NOT f_check_for_senior_doctor(NEW.staff_id, NEW.start_time, NEW.start_date, v_dept) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Cannot add an Intern Doctor to a shift without atleast one Senior Registrar or Head Physician present.';
+    END IF;
+
+    IF calculate_shift_members(NEW.shift_id, NEW.start_time, NEW.start_date) THEN
+        SET NEW.shift_status = 'Scheduled';
+    ELSE
+        SET NEW.shift_status = 'Draft';
+    END IF;
 END$$
 
 CREATE TRIGGER `check_shift_type_ins` BEFORE INSERT ON `Shifts`
