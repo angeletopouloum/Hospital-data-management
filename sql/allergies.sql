@@ -47,36 +47,43 @@ CREATE TABLE IF NOT EXISTS Prescription (
     CHECK(starting_date < end_date)
 );
 
-
-
 DELIMITER $$
-DROP TRIGGER IF EXISTS 'check_medicine_name_prescription';
-
-CREATE TRIGGER 'check_medicine_name_prescription' BEFORE INSERT ON Prescription
-
-
+--CHECK IF PATIENT HOSPITALIZED IN ORDER TO GET PRESCRIBED
+CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Prescription
+FOR EACH ROW
+BEGIN
+  IF (SELECT hospitalization_id FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL THEN
+    SIGNAL_SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'To prescribe medicines, patient must be hospitalized.';
+  END IF;
+END$$
 
 
 DROP TRIGGER IF EXISTS `check_allergies_upd`;
-
+--CHECK IF PATIENT OR MEDICINE CHANGED, WE DONT MIND UPDATING THE REST
 CREATE TRIGGER `check_allergies_upd` BEFORE UPDATE ON Prescription
 FOR EACH ROW
 BEGIN
-    
+  DECLARE is_allergic INT DEAFULT 0;
+  IF (NEW.medication_id != OLD.medication_id) OR (NEW.patient_AMKA!=OLD.patient_AMKA) THEN
+    SELECT COUNT(*) INTO is_allergic FROM Drug_Info_Active_Substance drug JOIN Patient_Allergy allergy ON drug.active_substance = allergy.active_substance_allergy_name
+    WHERE (drug.id = NEW.medicine_id) AND (allergy.patiend_id = NEW.patient_AMKA);
+    IF is_allergic > 0 THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Updated medicine or patient caused allergy flag.'
+    END IF;
 END$$
 
 DROP TRIGGER IF EXISTS `check_allergies_ins`;
-
+--edw ginetai kai me if exists gia na mhn xanw xrono na apothhkeuw sto is_allergic kai na metraw ola ta instances
 CREATE TRIGGER `check_allergies_ins` BEFORE INSERT ON Prescription
 FOR EACH ROW
 BEGIN
   DECLARE is_allergic INT DEFAULT 0;
   SELECT COUNT(*) INTO is_allergic FROM Drug_Info_Active_Substance drug JOIN Patient_Allergy allergy ON drug.active_substance = allergy.active_substance_allergy_name
-  WHERE (drug.product_name = NEW.medicine_name) AND (allergy.patient_id = NEW.patient_AMKA);
+  WHERE (drug.id = NEW.medicine_id) AND (allergy.patient_id = NEW.patient_AMKA);
   IF is_allergic > 0 THEN 
     SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Patient is allergic to this drug.';
   END IF;
-
-    
 END$$
