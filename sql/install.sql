@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS Triage (
   urgency_level INT NOT NULL,
   position INT DEFAULT NULL,
   outcome INT NOT NULL,
-  hospitalization_id VARCHAR(11) DEFAULT NULL,
+  hospitalization_id INT DEFAULT NULL,
   department VARCHAR(45) NOT NULL,
   PRIMARY KEY(triage_id),
   CONSTRAINT fk_Nurse FOREIGN KEY (nurse_id) REFERENCES Nurse(nurse_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
