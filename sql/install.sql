@@ -217,7 +217,7 @@ CREATE TABLE IF NOT EXISTS Triage (
   CONSTRAINT fk_patient FOREIGN KEY (patient_AMKA) REFERENCES Patient(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_outcome FOREIGN KEY (outcome) REFERENCES Outcome(outcome_id),
   CONSTRAINT fk_triage_hospitalization FOREIGN KEY (hospitalization_id) REFERENCES Hospitalization(hospitalization_id),
-  CONSTRAINT fk_department_triage FOREIGN KEY (department) REFERENCES Department(department_id),
+  CONSTRAINT fk_department_triage FOREIGN KEY (department) REFERENCES Department(department_code),
   CONSTRAINT chk_urgency_level CHECK(urgency_level in(1,2,3,4,5))
 );
 
