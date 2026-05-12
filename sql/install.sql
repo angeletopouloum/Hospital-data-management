@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS Triage (
   position INT DEFAULT NULL,
   outcome INT NOT NULL,
   hospitalization_id INT DEFAULT NULL,
-  department VARCHAR(45) NOT NULL,
+  department INT NOT NULL,
   PRIMARY KEY(triage_id),
   CONSTRAINT fk_Nurse FOREIGN KEY (nurse_id) REFERENCES Nurse(nurse_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_patient FOREIGN KEY (patient_AMKA) REFERENCES Patient(patient_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -389,9 +389,9 @@ CREATE TABLE IF NOT EXISTS Prescription (
     CHECK(starting_date < end_date)
 );
 
-DELIMITER $$
-
 DROP TRIGGER IF EXISTS is_doctor_ins;
+
+DELIMITER $$
 
 CREATE TRIGGER `is_doctor_ins` BEFORE INSERT ON `Department`
 FOR EACH ROW
