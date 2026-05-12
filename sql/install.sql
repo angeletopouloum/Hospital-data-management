@@ -123,9 +123,9 @@ CREATE TABLE IF NOT EXISTS `Patient` (
 DROP TABLE IF EXISTS Diagnoses;
 
 CREATE TABLE IF NOT EXISTS Diagnoses(
-    code_idc10 VARCHAR(11) UNIQUE NOT NULL,
+    code_icd10 VARCHAR(11) UNIQUE NOT NULL,
     diagnoses_description TEXT NOT NULL,
-    PRIMARY KEY(code_idc10)
+    PRIMARY KEY(code_icd10)
 );
 
 
@@ -149,8 +149,8 @@ CREATE TABLE IF NOT EXISTS `Hospitalization` (
     CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
     CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN`) REFERENCES `Cost_Calculation` (`KEN`),
     CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
-    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (code_idc10),
-    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (code_idc10)
+    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (code_icd10),
+    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (code_icd10)
 );
 
 DROP TABLE IF EXISTS `Insurance_Type`;
