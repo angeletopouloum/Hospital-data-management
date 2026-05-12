@@ -407,8 +407,6 @@ DROP TRIGGER IF EXISTS `check_discharge_data`;
 DROP TRIGGER IF EXISTS `set_bed_occupied`;
 DROP TRIGGER IF EXISTS `set_bed_available`;
 DROP TRIGGER IF EXISTS `check_bed_availability`;
-DROP TRIGGER IF EXISTS `check_prescription_dates_upd`;
-DROP TRIGGER IF EXISTS `check_prescription_dates_ins`;
 DROP FUNCTION IF EXISTS `calculate_shift_members`;
 DROP FUNCTION IF EXISTS `exists_senior_doctor`;
 DROP FUNCTION IF EXISTS `is_intern`;
@@ -633,25 +631,6 @@ BEGIN
             SET MESSAGE_TEXT = 'The selected bed is not available.';
     END IF;
 END$$
-
-CREATE TRIGGER `check_prescription_dates_upd` BEFORE UPDATE ON `Prescription`
-FOR EACH ROW
-BEGIN
-    IF new.start_date > new.end_date THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
-    END IF;
-END$$
-
-CREATE TRIGGER `check_prescription_dates_ins` BEFORE INSERT ON `Prescription`
-FOR EACH ROW
-BEGIN
-    IF new.start_date > new.end_date THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Prescription start date must be before end date.';
-    END IF;
-END$$
-
 
 CREATE FUNCTION `calculate_shift_members` (p_shift_id INT, p_start_time TIME, p_start_date DATE) RETURNS TINYINT(1)
 BEGIN
