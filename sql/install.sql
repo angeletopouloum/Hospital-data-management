@@ -332,6 +332,7 @@ CREATE TABLE IF NOT EXISTS Doctor_Evaluation(
   hospitalization_id INT NOT NULL,
   quality_of_care INT NOT NULL,
   doctor_id CHAR(11) NOT NULL,
+  eval_date DATETIME NOT NULL,
   UNIQUE(doctor_id, hospitalization_id),
   CONSTRAINT fk_hospitalization_doctor_evaluation FOREIGN KEY (hospitalization_id) REFERENCES Hospitalization(hospitalization_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT fk_doctor_evaluation FOREIGN KEY (doctor_id) REFERENCES Doctor(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -1195,7 +1196,7 @@ FOR EACH ROW
 BEGIN
     DECLARE queue_length INT DEFAULT 0;
     SELECT COUNT(*) + 1 INTO queue_length FROM Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id 
-    WHERE outc.outcome_name = 'Waiting' AND (tr.urgency_level < NEW.urgency_level) OR ((tr.urgency_level = NEW.urgency_level) AND (tr.arrival_time < NEW.arrival_time));
+    WHERE outc.outcome_description = 'Waiting' AND (tr.urgency_level < NEW.urgency_level) OR ((tr.urgency_level = NEW.urgency_level) AND (tr.arrival_time < NEW.arrival_time));
     SET NEW.position = queue_length;
 END$$
   
@@ -1205,11 +1206,11 @@ FOR EACH ROW
 BEGIN
     DECLARE old_outcome VARCHAR(45);
     DECLARE new_outcome VARCHAR(45);
-    SELECT outcome_name INTO old_outcome FROM Outcome WHERE outcome_id = OLD.outcome_id;
-    SELECT outcome_name INTO new_outcome FROM Outcome WHERE outcome_id = new.outcome_id;
-    IF old_outcome = 'Waiting' AND new_outcome != 'Waiting' THEN
+    SELECT outcome_description INTO old_outcome FROM Outcome WHERE outcome_id = OLD.outcome_id;
+    SELECT outcome_description INTO new_outcome FROM Outcome WHERE outcome_id = NEW.outcome_id;
+    IF (old_outcome = 'Waiting') AND (new_outcome != 'Waiting') THEN
         UPDATE Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id SET tr.position = tr.position -1
-        WHERE outc.outcome_name = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
+        WHERE outc.outcome_description = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
     END IF;
 END$$
 
@@ -1228,11 +1229,11 @@ END$$
 CREATE TRIGGER finished_doctor_evaluation BEFORE INSERT ON Doctor_Evaluation
 FOR EACH ROW
 BEGIN
-  DECLARE discharge_date DATE;
-  SELECT discharge_date INTO discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id;
-  IF(discharge_date IS NULL
-  OR (discharge_date > NEW.eval_date)) THEN
-    SIGNAL SQLSTATE '45000' 
+  DECLARE discharge_dates DATE;
+  SELECT discharge_date INTO discharge_dates FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id;
+  IF(discharge_dates IS NULL
+  OR (discharge_dates > NEW.eval_date)) THEN
+    SIGNAL SQLSTATE '45000'
       SET MESSAGE_TEXT = 'Cannot evaluate doctor before discharge';
   END IF;
 END$$
