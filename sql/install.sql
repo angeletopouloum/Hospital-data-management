@@ -239,10 +239,10 @@ DROP TABLE IF EXISTS Lab_Work;
 
 CREATE TABLE IF NOT EXISTS Lab_Work(
   lab_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  hospitalization_id VARCHAR(11) NOT NULL,
+  hospitalization_id INT NOT NULL,
   lab_type_id INT NOT NULL,
   date_ordered DATETIME NOT NULL,
-  ordered_doctor_id VARCHAR(11) NOT NULL,
+  ordered_doctor_id CHAR(11) NOT NULL,
   lab_result_value DECIMAL(10,3),
   lab_result_units VARCHAR(45),
   lab_result_text TEXT,
@@ -287,7 +287,7 @@ CREATE TABLE IF NOT EXISTS Operation(
   start_time DATETIME, 
   expected_end_time DATETIME,
   room_id INT NOT NULL, 
-  surgeon_id VARCHAR(11),
+  surgeon_id CHAR(11),
   CONSTRAINT fk_operation_hospitalization FOREIGN KEY (hospitalization_id) REFERENCES Hospitalization(hospitalization_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT fk_operation_type FOREIGN KEY (operation_type_id) REFERENCES Operation_info(id) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_surgeon FOREIGN KEY (surgeon_id) REFERENCES Doctor(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -299,10 +299,10 @@ DROP TABLE IF EXISTS Assistant_Staff;
 
 CREATE TABLE IF NOT EXISTS Assistant_Staff(
   operation_id INT NOT NULL,
-  assistant_staff_id VARCHAR(11) NOT NULL,
+  assistant_staff_id CHAR(11) NOT NULL,
   PRIMARY KEY (operation_id, assistant_staff_id),
   CONSTRAINT fk_operation FOREIGN KEY (operation_id) REFERENCES Operation(operation_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_assistant_staff FOREIGN KEY (assistant_staff_id) REFERENCES Staff(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE --Tha boruse na bei staff id  
+  CONSTRAINT fk_assistant_staff FOREIGN KEY (assistant_staff_id) REFERENCES Staff(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE  
 );
 
 -- ratings
@@ -331,7 +331,7 @@ CREATE TABLE IF NOT EXISTS Doctor_Evaluation(
   doctor_evaluation_id INT NOT NULL AUTO_INCREMENT,
   hospitalization_id INT NOT NULL,
   quality_of_care INT NOT NULL,
-  doctor_id VARCHAR(11) NOT NULL,
+  doctor_id CHAR(11) NOT NULL,
   UNIQUE(doctor_id, hospitalization_id),
   CONSTRAINT fk_hospitalization_doctor_evaluation FOREIGN KEY (hospitalization_id) REFERENCES Hospitalization(hospitalization_id) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT fk_doctor_evaluation FOREIGN KEY (doctor_id) REFERENCES Doctor(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -360,7 +360,7 @@ DROP TABLE IF EXISTS Patient_Allergy;
 
 CREATE TABLE IF NOT EXISTS Patient_Allergy(
   allergy_id INT NOT NULL AUTO_INCREMENT,
-  patient_id VARCHAR(11) NOT NULL,
+  patient_id CHAR(11) NOT NULL,
   active_subastance_allergy_name VARCHAR(45) NOT NULL,
   PRIMARY KEY(allergy_id),
   CONSTRAINT `fk_patient_id_allergy` FOREIGN KEY (patient_id) REFERENCES Patient(AMKA) ON DELETE CASCADE ON UPDATE CASCADE
