@@ -2,10 +2,11 @@ DROP TABLE IF EXISTS Drug_Info_Active_Substance;
 --isws na vgalw to id giati sto prescription exw to product name pou zhtaei h ekfwnhsh
 CREATE TABLE IF NOT EXISTS Drug_Info_Active_Substance(
   id INT NOT NULL AUTO_INCREMENT,
-  product_name VARCHAR(45) NOT NULL UNIQUE, --thewrw oti an exw 2 paraplhsia alla diaforetika farmaka tha exoun allo onoma
+  product_name VARCHAR(45) NOT NULL, --thewrw oti an exw 2 paraplhsia alla diaforetika farmaka tha exoun allo onoma
   active_substance VARCHAR(45) NOT NULL, --borw na kanw add kai alles plhrofories an thelw
   PRIMARY KEY(id), --or PRIMARY KEY(product_name, country)
-  country VARCHAR(45) NOT NULL
+  country VARCHAR(45) NOT NULL,
+  UNIQUE(product_name, active_substance, country)
 );
 
 --diaforetikes allergies -> diaforetikes katagrafes
