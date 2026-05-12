@@ -1297,7 +1297,7 @@ BEGIN
     SELECT COUNT(*) + 1 INTO queue_length FROM Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id 
     WHERE outc.outcome_name = 'Waiting' AND (tr.urgency_level < NEW.urgency_level) OR ((tr.urgency_level = NEW.urgency_level) AND (tr.arrival_time < NEW.arrival_time));
     SET NEW.position = queue_length;
-END$$
+END
   
 -- CHECK POSITION AFTER UPDATE
 CREATE TRIGGER calculate_position_triage_upd AFTER UPDATE ON Triage
@@ -1311,7 +1311,7 @@ BEGIN
         UPDATE Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id SET tr.position = tr.position -1
         WHERE outc.outcome_name = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
     END IF;
-END$$
+END
 
 CREATE TRIGGER finished_hospitalization_evaluation BEFORE INSERT ON Hospital_Evaluation
 FOR EACH ROW
@@ -1323,7 +1323,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'Cannot evaluate hospital experience before discharge';
     END IF;
-END$$
+END
 
 CREATE TRIGGER finished_doctor_evaluation BEFORE INSERT ON Doctor_Evaluation
 FOR EACH ROW
@@ -1335,7 +1335,7 @@ BEGIN
     SIGNAL SQLSTATE '45000' 
       SET MESSAGE_TEXT = 'Cannot evaluate doctor before discharge';
   END IF;
-END$$
+END
 
 -- CHECK IF DOCTOR HAS PRESCRIBED ANYTHING TO THIS PATIENT DURING THIS HOSPITALIZATION
 CREATE TRIGGER doctor_evaluation_prescription_check BEFORE INSERT ON Doctor_Evaluation
@@ -1349,7 +1349,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'Δεν γίνεται να αξιολογήσετε χωρίς να σας έχει συνταγογραφήσει σε αυτή τη νοσηλεία.';
     END IF;
-END$$
+END
 
 -- CHECK LAB_WORK RESULTS: MUST CONTAIN EITHER ARITHMETIC VALUES OR TEXT OR BOTH
 CREATE TRIGGER lab_work_result BEFORE INSERT ON Lab_Work
@@ -1363,7 +1363,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' 
             SET MESSAGE_TEXT = 'Either lab result value with units or result text must be provided';
     END IF;
-END$$
+END
 
 -- CHECK IF MAIN DOCTOR FOR OPERATION IS ACTUALLY A SURGEON
 CREATE TRIGGER main_doctor_operation BEFORE INSERT ON Operation
@@ -1377,7 +1377,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Main doctor for operation must be a surgeon.';
     END IF;
-END$$
+END
 
 -- CHECK IF OPERATION ROOM IS NOT FOR SURGERY AND IF SURGEON IS ASSIGNED
 CREATE TRIGGER check_operation_room_type BEFORE INSERT ON Operation
@@ -1390,7 +1390,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Οι χειρουργοί κάνουν μόνο επεμβάσεις, όχι ιατρικές πράξεις.';
     END IF;
-END$$
+END
 
 -- CHECK IF PATIENT IS HOSPITALIZED FOR OPERATIONS AND LAB WORK
 CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Operation
@@ -1400,7 +1400,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'To perform operation patient must be hospitalized.';
     END IF;
-END$$
+END
 
 -- edw mporw na prosthesw to discharge date an einai megalutero apo to start date ths epemvashs
 CREATE TRIGGER check_if_hospitalized BEFORE INSERT ON Lab_Work
@@ -1410,7 +1410,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'To perform lab work patient must be hospitalized.';
     END IF;
-END$$
+END
 
 CREATE TRIGGER occupied_operation_room BEFORE INSERT ON Operation
 FOR EACH ROW
@@ -1421,7 +1421,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Operation room is occupied.';
     END IF;
-END$$
+END
 
 CREATE TRIGGER occupied_surgeon BEFORE INSERT ON Operation
 FOR EACH ROW
@@ -1432,7 +1432,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Surgeon is busy.';
     END IF;
-END$$
+END
 
 CREATE TRIGGER occupied_assistant_staff BEFORE INSERT ON Assistant_Staff
 FOR EACH ROW
@@ -1451,7 +1451,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Assistant staff busy.';
     END IF;
-END$$
+END
 
 CREATE TRIGGER check_surgeon_on_assistant_staff BEFORE INSERT ON Assistant_Staff
 FOR EACH ROW
