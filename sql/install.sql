@@ -1147,11 +1147,15 @@ BEGIN
     DECLARE v_shift_date DATE;
     DECLARE v_shift_start TIME;
     DECLARE v_shift_end TIME;
+    DECLARE v_operation_date DATE;
+    DECLARE v_operation_start TIME;
+    DECLARE v_operation_end TIME;
 
     SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.assistant_staff_id ORDER BY timestamp DESC LIMIT 1;
+    SELECT DATE(start_time), TIME(start_time), TIME(expected_end_time) INTO v_operation_date, v_operation_start, v_operation_end FROM Assistant_Staff a JOIN Operation o ON a.operation_id = o.operation_id WHERE a.operation_id = NEW.operation_id;
 
     IF v_shift_date IS NOT NULL AND v_shift_start IS NOT NULL AND v_shift_end IS NOT NULL THEN
-        IF v_shift_date <> DATE(NEW.start_time) OR v_shift_start > TIME(NEW.start_time) OR v_shift_end < TIME(NEW.expected_end_time) THEN
+        IF v_shift_date <> DATE(v_operation_date) OR v_shift_start > TIME(v_operation_start) OR v_shift_end < TIME(v_operation_end) THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'The assigned staff must have a shift registered at the time of the operation.';
         END IF;
@@ -1167,11 +1171,15 @@ BEGIN
     DECLARE v_shift_date DATE;
     DECLARE v_shift_start TIME;
     DECLARE v_shift_end TIME;
+    DECLARE v_operation_date DATE;
+    DECLARE v_operation_start TIME;
+    DECLARE v_operation_end TIME;
 
     SELECT start_date, start_time, end_time INTO v_shift_date, v_shift_start, v_shift_end FROM Shifts WHERE staff_AMKA = NEW.assistant_staff_id ORDER BY timestamp DESC LIMIT 1;
-
+    SELECT DATE(start_time), TIME(start_time), TIME(expected_end_time) INTO v_operation_date, v_operation_start, v_operation_end FROM Assistant_Staff a JOIN Operation o ON a.operation_id = o.operation_id WHERE a.operation_id = NEW.operation_id;
+    
     IF v_shift_date IS NOT NULL AND v_shift_start IS NOT NULL AND v_shift_end IS NOT NULL THEN
-        IF v_shift_date <> DATE(NEW.start_time) OR v_shift_start > TIME(NEW.start_time) OR v_shift_end < TIME(NEW.expected_end_time) THEN
+        IF v_shift_date <> DATE(v_operation_date) OR v_shift_start > TIME(v_operation_start) OR v_shift_end < TIME(v_operation_end) THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'The assigned staff must have a shift registered at the time of the operation.';
         END IF;
