@@ -765,21 +765,19 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `schedule_shift_on_duty_ins` AFTER INSERT ON `On_Duty`
+CREATE TRIGGER `schedule_shift_on_duty_ins` AFTER INSERT ON `Shifts`
 FOR EACH ROW
 BEGIN
     IF calculate_shift_members(NEW.shift_id, NEW.start_time, NEW.start_date) THEN
-        UPDATE Shifts
         SET shift_status = 'Scheduled'
         WHERE start_time = NEW.start_time AND start_date = NEW.start_date AND shift_id IN (SELECT shift_id FROM On_duty WHERE department_code = dept);
     END IF;
 END$$
 
-CREATE TRIGGER `schedule_shift_on_duty_upd` AFTER UPDATE ON `On_Duty`
+CREATE TRIGGER `schedule_shift_on_duty_upd` AFTER UPDATE ON `Shifts`
 FOR EACH ROW
 BEGIN
     IF calculate_shift_members(NEW.shift_id, NEW.start_time, NEW.start_date) THEN
-        UPDATE Shifts
         SET shift_status = 'Scheduled'
         WHERE start_time = NEW.start_time AND start_date = NEW.start_date AND shift_id IN (SELECT shift_id FROM On_duty WHERE department_code = dept);
     END IF;
