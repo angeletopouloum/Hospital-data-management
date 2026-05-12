@@ -99,10 +99,11 @@ CREATE TABLE IF NOT EXISTS `Beds` (
 DROP TABLE IF EXISTS `Cost_Calculation`;
 
 CREATE TABLE IF NOT EXISTS `Cost_Calculation` (
+    `id` INT NOT NULL AUTO_INCREMENT,
     `KEN` VARCHAR(5) NOT NULL,
     `base_cost` INT NOT NULL,
     `MDN` INT NOT NULL,    
-    PRIMARY KEY (`KEN`)
+    PRIMARY KEY (`id`)
 );
 
 DROP TABLE IF EXISTS `Patient`;
@@ -143,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `Hospitalization` (
     `bed_id_number` INT NOT NULL UNIQUE,
     `admission_date` DATE NOT NULL,
     `discharge_date` DATE,
-    `KEN` VARCHAR(5) NOT NULL,
+    `KEN_id` VARCHAR(5) NOT NULL,
     `admission_diagnosis_ICD` VARCHAR(11) NOT NULL,
     `discharge_diagnosis_ICD` VARCHAR(11),
     `admission_diagnosis_description` VARCHAR(255) NOT NULL,
@@ -152,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `Hospitalization` (
     PRIMARY KEY (`hospitalization_id`,`AMKA`, `admission_date`),
     CONSTRAINT `fk_Hospitalization_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE,
     CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
-    CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN`) REFERENCES `Cost_Calculation` (`KEN`),
+    CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN_id`) REFERENCES `Cost_Calculation` (`id`),
     CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
     CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (code_icd10),
     CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (code_icd10)
@@ -1079,21 +1080,17 @@ BEGIN
     DECLARE v_mdn INT;
     DECLARE v_base_cost DECIMAL(10, 2);
     DECLARE v_daily_cost DECIMAL(10, 2);
-    DECLARE v_lab_costs DECIMAL(10, 2);
-    DECLARE v_operation_costs DECIMAL(10, 2);
 
-    SELECT MDN INTO v_mdn FROM Cost_Calculation WHERE KEN = NEW.KEN;
-    SELECT base_cost INTO v_base_cost FROM Cost_Calculation WHERE KEN = NEW.KEN;
-    SELECT SUM(cost) INTO v_lab_costs FROM Lab_work_info WHERE id IN (SELECT lab_id FROM Lab_Work WHERE hospitalization_id = NEW.hospitalization.id); 
-    SELECT SUM(cost) INTO v_operation_costs FROM Operation_Info WHERE id IN (SELECT operation_type FROM Operation WHERE hospitalization_id = NEW.hospitalization_id);
+    SELECT MDN INTO v_mdn FROM Cost_Calculation WHERE id = NEW.KEN_id;
+    SELECT base_cost INTO v_base_cost FROM Cost_Calculation WHERE id = NEW.KEN_id;
 
     SET v_total_hospitalization_days = DATEDIFF(NEW.discharge_date, NEW.admission_date);
     SET V_daily_cost = v_base_cost / v_mdn;
 
     IF v_total_hospitalization_days = v_mdn THEN
-        SET NEW.hospitalization_cost = v_base_cost + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0);
+        SET NEW.hospitalization_cost = v_base_cost;
     ELSE
-        SET NEW.hospitalization_cost = v_base_cost + (v_total_hospitalization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0);
+        SET NEW.hospitalization_cost = v_base_cost + (v_total_hospitalization_days - v_mdn) * v_daily_cost/2;
     END IF;
 END$$
 
