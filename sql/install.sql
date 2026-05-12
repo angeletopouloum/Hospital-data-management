@@ -247,7 +247,7 @@ CREATE TABLE IF NOT EXISTS Lab_Work(
   lab_result_units VARCHAR(45),
   lab_result_text TEXT,
   CONSTRAINT fk_lab_hospitalization FOREIGN KEY (hospitalization_id) REFERENCES Hospitalization(hospitalization_id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT fk_lab_doctor FOREIGN KEY (ordered_doctor_id) REFERENCES Doctor(doctor_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_lab_doctor FOREIGN KEY (ordered_doctor_id) REFERENCES Doctor(AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_lab_type FOREIGN KEY (lab_type_id) REFERENCES Lab_work_info(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -282,7 +282,7 @@ DROP TABLE IF EXISTS Operation;
 
 CREATE TABLE IF NOT EXISTS Operation(
   operation_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  hospitalization_id VARCHAR(11) NOT NULL,
+  hospitalization_id INT NOT NULL,
   operation_type_id INT NOT NULL,
   start_time DATETIME, 
   expected_end_time DATETIME,
