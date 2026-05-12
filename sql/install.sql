@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `Hospitalization` (
     `bed_id_number` INT NOT NULL UNIQUE,
     `admission_date` DATE NOT NULL,
     `discharge_date` DATE,
-    `KEN_id` VARCHAR(5) NOT NULL,
+    `KEN_id` INT NOT NULL,
     `admission_diagnosis_ICD` VARCHAR(11) NOT NULL,
     `discharge_diagnosis_ICD` VARCHAR(11),
     `admission_diagnosis_description` VARCHAR(255) NOT NULL,
