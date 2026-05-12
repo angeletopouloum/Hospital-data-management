@@ -390,6 +390,52 @@ CREATE TABLE IF NOT EXISTS Prescription (
 );
 
 DROP TRIGGER IF EXISTS is_doctor_ins;
+DROP TRIGGER IF EXISTS is_doctor_upd;
+DROP TRIGGER IF EXISTS check_department_head_ins;
+DROP TRIGGER IF EXISTS `check_department_head_upd`;
+DROP TRIGGER IF EXISTS `check_if_doctor_exists`;
+DROP TRIGGER IF EXISTS `check_if_nurse_exists`;
+DROP TRIGGER IF EXISTS `check_if_admin_exists`;
+DROP TRIGGER IF EXISTS `check_is_intern_supervisor`;
+DROP TRIGGER IF EXISTS `check_rank_ins`;
+DROP TRIGGER IF EXISTS `check_rank_upd`;
+DROP TRIGGER IF EXISTS `check_supervision_chain_ins`;
+DROP TRIGGER IF EXISTS `check_supervision_chain_upd`;
+DROP TRIGGER IF EXISTS `decrease_bed_count`;
+DROP TRIGGER IF EXISTS `check_hospitalization_dates_ins`;
+DROP TRIGGER IF EXISTS `check_hospitalization_dates_upd`;
+DROP TRIGGER IF EXISTS `check_discharge_data`;
+DROP TRIGGER IF EXISTS `set_bed_occupied`;
+DROP TRIGGER IF EXISTS `set_bed_available`;
+DROP TRIGGER IF EXISTS `check_bed_availability`;
+DROP TRIGGER IF EXISTS `check_medicine_upd`;
+DROP TRIGGER IF EXISTS `check_medicine_ins`;
+DROP TRIGGER IF EXISTS `check_prescription_dates_upd`;
+DROP TRIGGER IF EXISTS `check_prescription_dates_ins`;
+DROP FUNCTION IF EXISTS `calculate_shift_members`;
+DROP FUNCTION IF EXISTS `exists_senior_doctor`;
+DROP FUNCTION IF EXISTS `is_intern`;
+DROP FUNCTION IF EXISTS `f_check_for_senior_doctor`;
+DROP TRIGGER IF EXISTS `update_shift_count_ins`;
+DROP TRIGGER IF EXISTS `update_shift_count_upd`;
+DROP TRIGGER IF EXISTS `schedule_shift_on_duty_ins`;
+DROP TRIGGER IF EXISTS `schedule_shift_on_duty_upd`;
+DROP TRIGGER IF EXISTS `check_for_senior_doctor_upd`;
+DROP TRIGGER IF EXISTS `check_for_senior_doctor_ins`;
+DROP TRIGGER IF EXISTS `set_shift_validity_ins`;
+DROP TRIGGER IF EXISTS `set_shift_validity_upd`;
+DROP TRIGGER IF EXISTS `check_max_shifts_upd`;
+DROP TRIGGER IF EXISTS `check_max_shifts_ins`;
+DROP TRIGGER IF EXISTS `check_if_shift_exists`;
+DROP TRIGGER IF EXISTS `check_shift_type_ins`;
+DROP TRIGGER IF EXISTS `check_shift_type_upd`;
+DROP TRIGGER IF EXISTS `check_consecutive_shifts_ins`;
+DROP TRIGGER IF EXISTS `check_consecutive_shifts_upd`;
+DROP TRIGGER IF EXISTS `check_night_shift_validity_ins`;
+DROP TRIGGER IF EXISTS `check_night_shift_validity_upd`;
+DROP TRIGGER IF EXISTS `reschedule_shift_del`;
+DROP FUNCTION IF EXISTS `calculate_consecutive_night_shifts`;
+DROP TRIGGER IF EXISTS `calculate_total_cost`;
 
 DELIMITER $$
 
@@ -402,8 +448,6 @@ BEGIN
     END IF; 
 END
 
-DROP TRIGGER IF EXISTS is_doctor_upd;
-
 CREATE TRIGGER `is_doctor_upd` BEFORE UPDATE ON `Department`
 FOR EACH ROW
 BEGIN
@@ -412,8 +456,6 @@ BEGIN
             SET MESSAGE_TEXT = 'Department head must be a doctor.';
     END IF; 
 END
-
-DROP TRIGGER IF EXISTS check_department_head_ins;
 
 CREATE TRIGGER `check_department_head_ins` BEFORE INSERT ON `Department`
 FOR EACH ROW
@@ -427,8 +469,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_department_head_upd`;
-
 CREATE TRIGGER `check_department_head_upd` BEFORE UPDATE ON `Department`
 FOR EACH ROW
 BEGIN
@@ -441,7 +481,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_if_doctor_exists`;
 
 CREATE TRIGGER `check_if_doctor_exists` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
@@ -452,7 +491,6 @@ BEGIN
     END IF;
 END;
 
-DROP TRIGGER IF EXISTS `check_if_nurse_exists`;
 
 CREATE TRIGGER `check_if_nurse_exists` BEFORE INSERT ON `Nurse`
 FOR EACH ROW
@@ -463,7 +501,7 @@ BEGIN
     END IF;
 END;
 
-DROP TRIGGER IF EXISTS `check_if_admin_exists`;
+
 
 CREATE TRIGGER `check_if_admin_exists` BEFORE INSERT ON `Administrative_staff`
 FOR EACH ROW
@@ -474,7 +512,7 @@ BEGIN
     END IF;
 END;
 
-DROP TRIGGER IF EXISTS `check_is_intern_supervisor`;
+
 
 CREATE TRIGGER `check_is_intern_supervisor` BEFORE DELETE ON `Doctor`
 FOR EACH ROW
@@ -485,7 +523,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_rank_ins`;
 
 CREATE TRIGGER `check_rank_ins` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
@@ -500,7 +537,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_rank_upd`;
+
 
 CREATE TRIGGER `check_rank_upd` BEFORE UPDATE ON `Doctor`
 FOR EACH ROW
@@ -515,7 +552,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_supervision_chain_ins`;
 
 CREATE TRIGGER `check_supervision_chain_ins` BEFORE INSERT ON `Doctor`
 FOR EACH ROW
@@ -526,7 +562,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_supervision_chain_upd`;
+
 
 CREATE TRIGGER `check_supervision_chain_upd` BEFORE UPDATE ON `Doctor`
 FOR EACH ROW
@@ -537,7 +573,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `increase_bed_count`;
+
 
 CREATE TRIGGER `increase_bed_count` AFTER INSERT ON `Beds`
 FOR EACH ROW
@@ -547,7 +583,7 @@ BEGIN
     WHERE department_code = new.department_code;
 END
 
-DROP TRIGGER IF EXISTS `decrease_bed_count`;
+
 
 CREATE TRIGGER `decrease_bed_count` AFTER DELETE ON `Beds`
 FOR EACH ROW
@@ -557,7 +593,7 @@ BEGIN
     WHERE department_code = old.department_code;
 END
 
-DROP TRIGGER IF EXISTS `check_hospitalization_dates_ins`;
+
 
 CREATE TRIGGER `check_hospitalization_dates_ins` BEFORE INSERT ON `Hospitalization`
 FOR EACH ROW
@@ -568,7 +604,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_hospitalization_dates_upd`;
 
 CREATE TRIGGER `check_hospitalization_dates_upd` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
@@ -579,7 +614,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_discharge_data`;
+
 
 CREATE TRIGGER `check_discharge_data` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
@@ -592,7 +627,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `set_bed_occupied`;
+
 
 CREATE TRIGGER `set_bed_occupied` AFTER INSERT ON `Hospitalization`
 FOR EACH ROW
@@ -602,7 +637,7 @@ BEGIN
     WHERE id_number = new.bed_id_number;
 END
 
-DROP TRIGGER IF EXISTS `set_bed_available`;
+
 
 CREATE TRIGGER `set_bed_available` AFTER UPDATE ON `Hospitalization`
 FOR EACH ROW
@@ -614,7 +649,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_bed_availability`;
+
 
 CREATE TRIGGER `check_bed_availability` BEFORE INSERT ON `Hospitalization`
 FOR EACH ROW
@@ -625,7 +660,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_medicine_upd`;
+
 
 CREATE TRIGGER `check_medicine_upd` BEFORE UPDATE ON `Medicine`
 FOR EACH ROW
@@ -640,7 +675,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_medicine_ins`;
+
 
 CREATE TRIGGER `check_medicine_ins` BEFORE INSERT ON `Medicine`
 FOR EACH ROW
@@ -655,7 +690,7 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_prescription_dates_upd`;
+
 
 CREATE TRIGGER `check_prescription_dates_upd` BEFORE UPDATE ON `Prescription`
 FOR EACH ROW
@@ -666,7 +701,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_prescription_dates_ins`;
 
 CREATE TRIGGER `check_prescription_dates_ins` BEFORE INSERT ON `Prescription`
 FOR EACH ROW
@@ -677,29 +711,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_allergies_upd`;
-
-CREATE TRIGGER `check_allergies_upd` BEFORE UPDATE ON `Prescription`
-FOR EACH ROW
-BEGIN
-    IF EXISTS (SELECT (SELECT medicine_ema_code FROM Allergy WHERE patient_AMKA = new.patient_AMKA)) THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
-    END IF;
-END
-
-DROP TRIGGER IF EXISTS `check_allergies_ins`;
-
-CREATE TRIGGER `check_allergies_ins` BEFORE INSERT ON `Prescription`
-FOR EACH ROW
-BEGIN
-    IF EXISTS (SELECT (SELECT medicine_ema_code FROM Allergy WHERE patient_AMKA = new.patient_AMKA)) THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
-    END IF;
-END
-
-DROP FUNCTION IF EXISTS `calculate_shift_members`;
 
 CREATE FUNCTION `calculate_shift_members` (p_shift_id INT, p_start_time TIME, p_start_date DATE) RETURNS TINYINT(1)
 BEGIN
@@ -720,7 +731,6 @@ BEGIN
     END IF;
 END
 
-DROP FUNCTION IF EXISTS `exists_senior_doctor`;
 
 CREATE FUNCTION `exists_senior_doctor`(p_start_time TIME, p_start_date DATE, p_dept_code INT) RETURNS TINYINT(1)
 BEGIN
@@ -738,7 +748,6 @@ BEGIN
     END IF;
 END
 
-DROP FUNCTION IF EXISTS `is_intern`;
 
 CREATE FUNCTION `is_intern` (p_staff_id INT) RETURNS TINYINT(1)
 BEGIN
@@ -749,7 +758,6 @@ BEGIN
     END IF;
 END
 
-DROP FUNCTION IF EXISTS `f_check_for_senior_doctor`;
 
 CREATE FUNCTION `f_check_for_senior_doctor`(p_staff_id INT, p_start_time TIME, p_start_date DATE, p_dept_code INT) RETURNS TINYINT(1)
 BEGIN
@@ -767,7 +775,6 @@ BEGIN
     RETURN exists_senior_doctor(p_start_time, p_start_date, p_dept_code);
 END
 
-DROP TRIGGER IF EXISTS `update_shift_count_ins`;
 
 CREATE TRIGGER `update_shift_count_ins` AFTER INSERT ON `Shifts`
 FOR EACH ROW
@@ -807,7 +814,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `update_shift_count_upd`;
 
 CREATE TRIGGER `update_shift_count_upd` AFTER UPDATE ON `Shifts`
 FOR EACH ROW
@@ -847,7 +853,6 @@ BEGIN
     END IF;
 END 
 
-DROP TRIGGER IF EXISTS `schedule_shift_on_duty_ins`;
 
 CREATE TRIGGER `schedule_shift_on_duty_ins` AFTER INSERT ON `On_Duty`
 FOR EACH ROW
@@ -859,7 +864,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `schedule_shift_on_duty_upd`;
 
 CREATE TRIGGER `schedule_shift_on_duty_upd` AFTER UPDATE ON `On_Duty`
 FOR EACH ROW
@@ -871,7 +875,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_for_senior_doctor_upd`;
 
 CREATE TRIGGER `check_for_senior_doctor_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
@@ -885,7 +888,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_for_senior_doctor_ins`;
 
 CREATE TRIGGER `check_for_senior_doctor_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -899,7 +901,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `set_shift_validity_ins`;
 
 CREATE TRIGGER `set_shift_validity_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -912,7 +913,6 @@ BEGIN
     SET NEW.shift_status = 'Draft';
 END
 
-DROP TRIGGER IF EXISTS `set_shift_validity_upd`;
 
 CREATE TRIGGER `set_shift_validity_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
@@ -925,7 +925,6 @@ BEGIN
     SET NEW.shift_status = 'Draft';
 END
 
-DROP TRIGGER IF EXISTS `check_max_shifts_upd`;
 
 CREATE TRIGGER `check_max_shifts_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
@@ -962,7 +961,6 @@ BEGIN
     END CASE;    
 END
 
-DROP TRIGGER IF EXISTS `check_max_shifts_ins`;
 
 CREATE TRIGGER `check_max_shifts_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -999,7 +997,6 @@ BEGIN
     END CASE;   
 END
 
-DROP TRIGGER IF EXISTS `check_if_shift_exists`;
 
 CREATE TRIGGER `check_if_shift_exists` BEFORE INSERT ON `On_Duty`
 FOR EACH ROW
@@ -1010,7 +1007,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_shift_type_ins`;
 
 CREATE TRIGGER `check_shift_type_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW FOLLOWS `set_shift_validity_ins` PRECEDES `check_night_shift_validity_ins`
@@ -1027,7 +1023,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_shift_type_upd`;
 
 CREATE TRIGGER `check_shift_type_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW FOLLOWS `set_shift_validity_upd` PRECEDES `check_night_shift_validity_upd`
@@ -1044,7 +1039,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_consecutive_shifts_ins`;
 
 CREATE TRIGGER `check_consecutive_shifts_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW
@@ -1061,7 +1055,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_consecutive_shifts_upd`;
 
 CREATE TRIGGER `check_consecutive_shifts_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW
@@ -1078,7 +1071,6 @@ BEGIN
     END IF;
 END
 
-DROP TRIGGER IF EXISTS `check_night_shift_validity_ins`;
 
 CREATE TRIGGER `check_night_shift_validity_ins` BEFORE INSERT ON `Shifts`
 FOR EACH ROW FOLLOWS `check_shift_type_ins`
@@ -1107,7 +1099,6 @@ BEGIN
     END IF;    
 END
 
-DROP TRIGGER IF EXISTS `check_night_shift_validity_upd`;
 
 CREATE TRIGGER `check_night_shift_validity_upd` BEFORE UPDATE ON `Shifts`
 FOR EACH ROW FOLLOWS `check_shift_type_upd`
@@ -1136,7 +1127,6 @@ BEGIN
     END IF;    
 END
 
-DROP TRIGGER IF EXISTS `reschedule_shift_del`;
 
 CREATE TRIGGER `reschedule_shift_del` AFTER DELETE ON `Shifts`
 FOR EACH ROW
@@ -1183,7 +1173,6 @@ BEGIN
     END IF; 
 END
 
-DROP FUNCTION IF EXISTS `calculate_consecutive_night_shifts`;
 
 CREATE FUNCTION `calculate_consecutive_night_shifts`(p_staff_id INT, p_start_date DATE) RETURNS INT
 BEGIN
@@ -1194,7 +1183,6 @@ BEGIN
     RETURN v_count;
 END
 
-DROP TRIGGER IF EXISTS `calculate_total_cost`;
 
 CREATE TRIGGER `calculate_total_cost` BEFORE UPDATE ON `Hospitalization`
 FOR EACH ROW
