@@ -1,23 +1,11 @@
 --epeigonta peristatika - dialogh
-
-DROP TABLE IF EXISTS Urgency_Level;
-
-CREATE TABLE IF NOT EXISTS Urgency_Level (
-  level_id INT AUTO_INCREMENT NOT NULL,
-  urgency_name VARCHAR(45) NOT NULL,
-  priority_num INT NOT NULL,
-  PRIMARY KEY (level_id),
-  CONSTRAINT chk_urgency_name CHECK (urgency_name in ('Immediate', 'Emergent', 'Necessary', 'Important', 'Not Emergent')),
-  CONSTRAINT chk_priority_num CHECK (priority_num in (1, 2, 3, 4, 5))
-);
-
 DROP TABLE IF EXISTS Outcome;
 
 CREATE TABLE IF NOT EXISTS Outcome (
   outcome_id INT NOT NULL AUTO_INCREMENT,
-  outcome_description VARCHAR(45) NOT NULL,
+  outcome_description VARCHAR(45) NOT NULL ON DEFAULT 'Waiting',
   outcome_odhgies TEXT DEFAULT NULL,
-  CONSTRAINT chk_outcome_description CHECK (outcome_description in ('Admitted', 'Discharged')),
+  CONSTRAINT chk_outcome_description CHECK (outcome_description in ('Admitted', 'Discharged', 'Waiting')),
   PRIMARY KEY (outcome_id)
 );
 
@@ -25,11 +13,11 @@ DROP TABLE IF EXISTS Triage;
 
 CREATE TABLE IF NOT EXISTS Triage (
   triage_id INT NOT NULL AUTO_INCREMENT, 
+  patient_AMKA VARCHAR(11) NOT NULL,
+  nurse_id VARCHAR(11) NOT NULL,
   arrival_time DATETIME NOT NULL,
   symptoms TEXT NOT NULL, 
   urgency_level INT NOT NULL,
-  patient_AMKA VARCHAR(11) NOT NULL,
-  nurse_AMKA VARCHAR(11) NOT NULL,
   position INT DEFAULT NULL,
   outcome INT NOT NULL,
   hospitalization_id VARCHAR(11) DEFAULT NULL,
@@ -37,32 +25,12 @@ CREATE TABLE IF NOT EXISTS Triage (
   PRIMARY KEY(triage_id),
   CONSTRAINT fk_Nurse FOREIGN KEY (nurse_AMKA) REFERENCES Nurse(nurse_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT fk_patient FOREIGN KEY (patient_AMKA) REFERENCES Patient(patient_AMKA) ON DELETE RESTRICT ON UPDATE CASCADE,
-  --CONSTRAINT fk_urgency_level FOREIGN KEY (urgency_level) REFERENCES Urgency_Level(level_id) ON DELETE RESTRICT,
-  CHECK (urgency_level in (1, 2, 3, 4, 5)),
   CONSTRAINT fk_outcome FOREIGN KEY (outcome) REFERENCES Outcome(outcome_id),
   CONSTRAINT fk_triage_hospitalization FOREIGN KEY (hospitalization_id) 
   REFERENCES Hospitalization(hospitalization_id),
-  CONSTRAINT fk_department_triage FOREIGN KEY (department) REFERENCES Department(department_id) 
+  CONSTRAINT fk_department_triage FOREIGN KEY (department) REFERENCES Department(department_id),
+  CONSTRAINT chk_urgency_level CHECK(urgency_level in(1,2,3,4,5))
 );
-
-DELIMITER $$
-CREATE TRIGGER change_position_urgency AFTER INSERT ON Triage
-FOR EACH ROW
-BEGIN
-  DECLARE new_priority INT;
-  DECLARE queue_position INT DEFAULT 1;
-  SELECT priority_num INTO new_priority 
-  FROM Triage 
-  WHERE urgency_level = NEW.urgency_level;
-  SELECT COUNT(*) + 1 INTO queue_position
-  FROM Triage 
-  JOIN Urgency_Level ul ON Triage.urgency_level = ul.level_id
-  WHERE (ul.priority_num < new_priority) 
-     OR (ul.priority_num = new_priority AND Triage
-     arrival_time < NEW.arrival_time);
-  SET NEW.position = queue_position;
-END$$
-DELIMITER ;
 
 --Lab_work
 
@@ -182,25 +150,54 @@ CREATE TABLE IF NOT EXISTS Doctor_Evaluation(
   PRIMARY KEY (doctor_evaluation_id)
 );
 
---CHECK IF PATIENT HAS FINISHED HOSPITIALIZAIION
+
 DELIMITER $$
-CREATE TRIGGER finiished_hospilalization_evaluation BEFORE INSERT ON Hospital_Evaluation
+--CHECK POSITION BEFORE INSERT
+CREATE TRIGGER calculate_position_triage BEFORE INSERT ON Triage
 FOR EACH ROW
 BEGIN
-  IF(SELECT discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL
-  OR (SELECT discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) > NEW.eval_date THEN
+  DECLARE queue_length INT DEFAULT 0;
+  SELECT COUNT(*) + 1 INTO queue_length FROM Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id 
+  WHERE outc.outcome_name = 'Waiting' AND (tr.urgency_level < NEW.urgency_level) OR ((tr.urgency_level = NEW.urgency_level) AND (tr.arrival_time < NEW.arrival_time));
+  SET NEW.position = queue_length;
+END$$
+  
+--CHECK POSITION AFTER UPDATE
+CREATE TRIGGER calculate_position_triage_upd AFTER UPDATE ON Triage
+FOR EACH ROW
+BEGIN
+  DECLARE old_outcome VARCHAR(45);
+  DECLARE new_outcome VARCHAR(45);
+  SELECT outcome_name INTO old_outcome FROM Outcome WHERE outcome_id = OLD.outcome_id;
+  SELECT outcome_name INTO new_outcome FROM Outcome WHERE outcome_id = new.outcome_id;
+  IF old_outcome_name = 'Waiting' AND new_outcome_name != 'Waiting' THEN
+    UPDATE Triage tr JOIN Outcome outc ON tr.outcome_id = outc.outcome_id SET tr.position = tr.position -1
+    WHERE outc.outcome_name = 'Waiting' AND tr.urgency_level = OLD.urgency_level AND tr.position > OLD.position;
+  END IF;
+END$$
+
+
+CREATE TRIGGER finished_hospitalization_evaluation BEFORE INSERT ON Hospital_Evaluation
+FOR EACH ROW
+BEGIN
+  DECLARE discharge_date DATE;
+  SELECT discharge_date INTO discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id;
+  IF discharge_date IS NULL
+  OR discharge_date > NEW.eval_date THEN
     SIGNAL SQLSTATE '45000' 
       SET MESSAGE_TEXT = 'Cannot evaluate hospital experience before discharge';
   END IF;
 END$$
 
-CREATE TRIGGER finiished_doctor_evaluation BEFORE INSERT ON Doctor_Evaluation
+CREATE TRIGGER finished_doctor_evaluation BEFORE INSERT ON Doctor_Evaluation
 FOR EACH ROW
 BEGIN
-  IF((SELECT discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) IS NULL
-  OR (SELECT discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id) > NEW.eval_date) THEN
+  DECLARE discharge_date DATE;
+  SELECT discharge_date INTO discharge_date FROM Hospitalization WHERE hospitalization_id = NEW.hospitalization_id;
+  IF(discharge_date IS NULL
+  OR (discharge_date > NEW.eval_date)) THEN
     SIGNAL SQLSTATE '45000' 
-      SET MESSAGE_TEXT = 'Cannot evaluate hospital experience before discharge';
+      SET MESSAGE_TEXT = 'Cannot evaluate doctor before discharge';
   END IF;
 END$$
 
