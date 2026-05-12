@@ -119,6 +119,17 @@ CREATE TABLE IF NOT EXISTS `Patient` (
     PRIMARY KEY (`AMKA`)
 );
 
+-- lookup table
+DROP TABLE IF EXISTS Diagnoses;
+
+CREATE TABLE IF NOT EXISTS Diagnoses(
+    id INT NOT NULL AUTO_INCREMENT,
+    code_idc10 VARCHAR(11) UNIQUE NOT NULL,
+    diagnoses_description TEXT NOT NULL,
+    PRIMARY KEY(id)
+);
+
+
 DROP TABLE IF EXISTS `Hospitalization`;
 
 CREATE TABLE IF NOT EXISTS `Hospitalization` (
@@ -139,8 +150,8 @@ CREATE TABLE IF NOT EXISTS `Hospitalization` (
     CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
     CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN`) REFERENCES `Cost_Calculation` (`KEN`),
     CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
-    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`),
-    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (`code`)
+    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (id),
+    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (id)
 );
 
 DROP TABLE IF EXISTS `Insurance_Type`;
@@ -219,7 +230,7 @@ DROP TABLE IF EXISTS Lab_work_info;
 --(id: auto inc kathe fora pou vazoume neo eidos ejetashs, lab_type: px aimatologikes, apeikonistikes, cost: einai standard gia kathe ejetash)
 CREATE TABLE IF NOT EXISTS Lab_work_info(
   id INT NOT NULL AUTO_INCREMENT,
-  lab_code VARCHAR(45) NOT NULL UNIQUE, --pisteuw prepei na einai unique giati alliws dyo ejetaseis borei na exoun idio onoma alla allo kostos, de xerw
+  lab_code VARCHAR(45) NOT NULL UNIQUE,
   lab_description VARCHAR(255) NOT NULL,
   cost DECIMAL(10,2) NOT NULL, --gia to apo panw mporei to nosokomeio na exei 2 kwdikous gia aimtologikes px aimatologikes 01 kai aimatologikes 02, opote auto apo mono tou na deixnei oti einai alles ejetaseia
   PRIMARY KEY (id)
