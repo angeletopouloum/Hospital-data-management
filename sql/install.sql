@@ -26,15 +26,15 @@ CREATE TABLE IF NOT EXISTS `Department` (
     `number_of_beds` INT NOT NULL,
     `building_floor` VARCHAR(45) NOT NULL,
     `building` VARCHAR(255) NOT NULL,
-    `department_head_AMKA` CHAR(11) UNIQUE,PRIMARY KEY (`department_code`),
-    CONSTRAINT `fk_Department_Doctor` FOREIGN KEY (`department_head_AMKA`) REFERENCES `Doctor` (`AMKA`)   
+    `department_head_AMKA` CHAR(11) UNIQUE,
+    PRIMARY KEY (`department_code`),
 );
 
 DROP TABLE IF EXISTS `Doctor`;
 
 CREATE TABLE IF NOT EXISTS `Doctor` (
-    `AMKA` CHAR(11) NOT NULL UNIQUE,
-    `Staff_id` INT NOT NULL UNIQUE,
+    `AMKA` CHAR(11) NOT NULL,
+    `Staff_id` INT NOT NULL,
     `medical_association_license_number` VARCHAR(30) NOT NULL UNIQUE,
     `specialty` VARCHAR(45) NOT NULL,
     `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician')),
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `Doctor` (
     `monthly_shifts_worked` INT,
     `consecutive_night_shifts` INT,
     `supervisor_AMKA` CHAR(11) CHECK (`supervisor_AMKA` <> `AMKA`),
-    PRIMARY KEY (`AMKA`, `Staff_id`),
+    PRIMARY KEY (`AMKA`, `Staff_id`, `department_code`),
     CONSTRAINT `fk_doctor_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
     CONSTRAINT `fk_doctor_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_doctor_supervisor` FOREIGN KEY (`supervisor_AMKA`) REFERENCES `Doctor` (`AMKA`) ON DELETE SET NULL,
@@ -382,6 +382,28 @@ CREATE TABLE IF NOT EXISTS Prescription (
 );
 
 DELIMITER $$
+
+DROP TRIGGER IF EXISTS is_doctor_ins;
+
+CREATE TRIGGER `is_doctor_ins` BEFORE INSERT ON `Department`
+FOR EACH ROW
+BEGIN
+    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> 'Doctor' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Department head must be a doctor.';
+    END IF; 
+END
+
+DROP TRIGGER IF EXISTS is_doctor_upd;
+
+CREATE TRIGGER `is_doctor_upd` BEFORE UPDATE ON `Department`
+FOR EACH ROW
+BEGIN
+    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> 'Doctor' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Department head must be a doctor.';
+    END IF; 
+END
 
 DROP TRIGGER IF EXISTS check_department_head_ins;
 
