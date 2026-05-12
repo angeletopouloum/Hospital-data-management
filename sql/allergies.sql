@@ -18,25 +18,25 @@ CREATE TABLE IF NOT EXISTS Patient_Allergy(
   CONSTRAINT fk_medicine_allergy FOREIGN KEY (medicine_ema_code) REFERENCES Medicine(medicine_ema_code) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-
+DELIMITER $$
 DROP TRIGGER IF EXISTS `check_allergies_upd`;
 
-CREATE TRIGGER `check_allergies_upd` BEFORE UPDATE ON `Prescription`
+CREATE TRIGGER `check_allergies_upd` BEFORE UPDATE ON Prescription
 FOR EACH ROW
 BEGIN
-    IF EXISTS (SELECT (SELECT medicine_ema_code FROM Allergy WHERE patient_AMKA = new.patient_AMKA)) THEN
+    IF EXISTS (SELECT (SELECT medicine_ema_code FROM Patient_Allergy WHERE patient_id = new.patient_id)) THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
     END IF;
-END
+END$$
 
 DROP TRIGGER IF EXISTS `check_allergies_ins`;
 
-CREATE TRIGGER `check_allergies_ins` BEFORE INSERT ON `Prescription`
+CREATE TRIGGER `check_allergies_ins` BEFORE INSERT ON Prescription
 FOR EACH ROW
 BEGIN
-    IF EXISTS (SELECT (SELECT medicine_ema_code FROM Allergy WHERE patient_AMKA = new.patient_AMKA)) THEN
+    IF EXISTS (SELECT (SELECT medicine_ema_code FROM Patient_Allergy WHERE patient_id = new.patient_id)) THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Cannot Prescribe medicine the patient is allergic to.';
     END IF;
-END
+END$$
