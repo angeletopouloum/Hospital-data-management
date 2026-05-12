@@ -123,10 +123,9 @@ CREATE TABLE IF NOT EXISTS `Patient` (
 DROP TABLE IF EXISTS Diagnoses;
 
 CREATE TABLE IF NOT EXISTS Diagnoses(
-    id INT NOT NULL AUTO_INCREMENT,
     code_idc10 VARCHAR(11) UNIQUE NOT NULL,
     diagnoses_description TEXT NOT NULL,
-    PRIMARY KEY(id)
+    PRIMARY KEY(code_idc10)
 );
 
 
@@ -140,8 +139,8 @@ CREATE TABLE IF NOT EXISTS `Hospitalization` (
     `admission_date` DATE NOT NULL,
     `discharge_date` DATE,
     `KEN` VARCHAR(5) NOT NULL,
-    `admission_diagnosis_ICD` INT NOT NULL,
-    `discharge_diagnosis_ICD` INT,
+    `admission_diagnosis_ICD` VARCHAR(11) NOT NULL,
+    `discharge_diagnosis_ICD` VARCHAR(11),
     `admission_diagnosis_description` VARCHAR(255) NOT NULL,
     `discharge_diagnosis_description` VARCHAR(255),
     `hospitalization_cost` DECIMAL(8, 2),
@@ -150,8 +149,8 @@ CREATE TABLE IF NOT EXISTS `Hospitalization` (
     CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
     CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN`) REFERENCES `Cost_Calculation` (`KEN`),
     CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
-    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (id),
-    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (id)
+    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (code_idc10),
+    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (code_idc10)
 );
 
 DROP TABLE IF EXISTS `Insurance_Type`;
