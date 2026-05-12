@@ -1091,13 +1091,13 @@ BEGIN
     SELECT SUM(cost) INTO v_lab_costs FROM Lab_work_info WHERE id IN (SELECT lab_id FROM Lab_Work WHERE hospitalization_id = NEW.hospitalization.id); 
     SELECT SUM(cost) INTO v_operation_costs FROM Operation_Info WHERE id IN (SELECT operation_type FROM Operation WHERE hospitalization_id = NEW.hospitalization_id);
 
-    SET v_total_hospitalization = DATEDIFF(NEW.discharge_date, NEW.admission_date);
+    SET v_total_hospitalization_days = DATEDIFF(NEW.discharge_date, NEW.admission_date);
     SET V_daily_cost = v_base_cost / v_mdn;
 
     IF NEW.total_hospitalization_days = v_mdn THEN
-        SET hospitalization_cost = v_base_cost + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
+        SET NEW.hospitalization_cost = v_base_cost + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
     ELSE
-        SET hospitalization_cost = v_base_cost + (v_total_hospitalization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
+        SET NEW.hospitalization_cost = v_base_cost + (v_total_hospitalization_days - v_mdn) * v_daily_cost/2 + IFNULL(v_lab_costs, 0) + IFNULL(v_operation_costs, 0) WHERE KEN = NEW.KEN;
     END IF;
 END$$
 
