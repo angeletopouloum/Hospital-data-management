@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS Department (
     name VARCHAR(45) NOT NULL UNIQUE,
     description VARCHAR(255) NOT NULL,
     number_of_beds INT NOT NULL,
-    building_floor VARCHAR(45) NOT NULL,
+    building_floor INT NOT NULL,
     building VARCHAR(255) NOT NULL,
     department_head_AMKA CHAR(11) UNIQUE,
     PRIMARY KEY (department_code)
