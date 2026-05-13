@@ -236,6 +236,7 @@ CREATE TABLE IF NOT EXISTS Lab_work_info(
   id INT NOT NULL AUTO_INCREMENT,
   lab_code VARCHAR(45) NOT NULL UNIQUE,
   lab_description VARCHAR(255) NOT NULL,
+  category VARCHAR(255) NOT NULL,
   cost DECIMAL(10,2) NOT NULL, -- gia to apo panw mporei to nosokomeio na exei 2 kwdikous gia aimtologikes px aimatologikes 01 kai aimatologikes 02, opote auto apo mono tou na deixnei oti einai alles ejetaseia
   PRIMARY KEY (id)
   );
@@ -262,8 +263,7 @@ CREATE TABLE IF NOT EXISTS Operation_info(
   id INT NOT NULL AUTO_INCREMENT,
   operation_code VARCHAR(45) NOT NULL UNIQUE,
   operation_name VARCHAR(255) NOT NULL,
-  description_text VARCHAR(255),
-  category VARCHAR(45) NOT NULL,
+  category VARCHAR(255) NOT NULL,
   expected_duration INT NOT NULL, 
   cost DECIMAL(10,2) NOT NULL,
   room_type VARCHAR(45) NOT NULL,
@@ -280,7 +280,6 @@ CREATE TABLE IF NOT EXISTS Operation_room(
   CONSTRAINT chk_room_type CHECK (room_type in ('Χειρουργείο', 'Αίθουσα Επεμβάσεων')),
   PRIMARY KEY (room_id)
 );
-
 
 DROP TABLE IF EXISTS Operation;
 
@@ -436,6 +435,10 @@ DROP TRIGGER IF EXISTS check_night_shift_validity_upd;
 DROP TRIGGER IF EXISTS reschedule_shift_del;
 DROP FUNCTION IF EXISTS calculate_consecutive_night_shifts;
 DROP TRIGGER IF EXISTS calculate_total_cost;
+DROP TRIGGER IF EXISTS check_operation_category_ins;
+DROP TRIGGER IF EXISTS check_operation_category_upd;
+DROP TRIGGER IF EXISTS check_lab_work_category_ins;
+DROP TRIGGER IF EXISTS check_lab_work_category_upd;
 
 DELIMITER $$
 
@@ -1129,6 +1132,42 @@ BEGIN
     ELSE
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'The specified surgeon does not have registered shifts.';
+    END IF;
+END$$
+
+CREATE TRIGGER check_operation_category_ins BEFORE INSERT ON Operation
+FOR EACH ROW
+BEGIN
+    IF (SELECT category FROM Operation_info WHERE id = NEW.operation_id) = 'ΑΝΕΝΕΡΓΟΣ' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = "Error: operation must correspond to an active code.";
+    END IF;
+END$$
+
+CREATE TRIGGER check_operation_category_upd BEFORE UPDATE ON Operation
+FOR EACH ROW
+BEGIN
+    IF (SELECT category FROM Operation_info WHERE id = NEW.operation_id) = 'ΑΝΕΝΕΡΓΟΣ' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = "Error: operation must correspond to an active code.";
+    END IF;
+END$$
+
+CREATE TRIGGER check_lab_work_category_ins BEFORE INSERT ON Lab_Work
+FOR EACH ROW
+BEGIN
+    IF (SELECT category FROM Lab_work_info WHERE id = NEW.lab_id) = 'ΑΝΕΝΕΡΓΟΣ' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = "Error: lab work must correspond to an active code.";
+    END IF;
+END$$
+
+CREATE TRIGGER check_lab_work_category_upd BEFORE UPDATE ON Lab_Work
+FOR EACH ROW
+BEGIN
+    IF (SELECT category FROM Lab_work_info WHERE id = NEW.lab_id) = 'ΑΝΕΝΕΡΓΟΣ' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = "Error: lab work must correspond to an active code.";
     END IF;
 END$$
 
