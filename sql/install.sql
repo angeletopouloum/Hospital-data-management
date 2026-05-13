@@ -355,8 +355,7 @@ CREATE TABLE IF NOT EXISTS Drug_Info_Active_Substance(
   pharmacovigilance_system_master_file_location VARCHAR(255) NOT NULL,
   pharmacovigilance_enquires_email_address VARCHAR(255) NOT NULL,
   pharmacovigilance_enquires_phone_number VARCHAR(255) NOT NULL,
-  PRIMARY KEY(id),
-  UNIQUE(product_name, active_substance, product_authorization_country)
+  PRIMARY KEY(id)
 );
 
 -- diaforetikes allergies = diaforetikes katagrafes
