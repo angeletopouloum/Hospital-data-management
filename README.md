@@ -26,3 +26,6 @@ PROJECT ASSUMPTIONS
 12) Only future shifts can be logged.
 13) Shift hours have values in the range [0, 23].
 14) If a shift is deleted, we assume the staff member did not complete it.
+15) Certain KEN codes in the given file, either appeared as duplicate or had errors. To accomondate this, we cross-checked the erroneous 
+    codes using the source: https://www.moh.gov.gr/articles/health/domes-kai-draseis-gia-thn-ygeia/kwdikopoihseis/kleista-enopoihmena-noshlia/713-kwdikopoihseis?fdl=3300
+    from the Greek Ministry of Health.
