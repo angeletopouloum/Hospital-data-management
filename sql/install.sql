@@ -235,7 +235,8 @@ DROP TABLE IF EXISTS Lab_work_info;
 CREATE TABLE IF NOT EXISTS Lab_work_info(
   id INT NOT NULL AUTO_INCREMENT,
   lab_code VARCHAR(45) NOT NULL UNIQUE,
-  lab_description VARCHAR(255) NOT NULL,
+  lab_description TEXT NOT NULL,
+  lab_category VARCHAR(255) NOT NULL,
   cost DECIMAL(10,2) NOT NULL, -- gia to apo panw mporei to nosokomeio na exei 2 kwdikous gia aimtologikes px aimatologikes 01 kai aimatologikes 02, opote auto apo mono tou na deixnei oti einai alles ejetaseia
   PRIMARY KEY (id)
   );
@@ -262,14 +263,12 @@ DROP TABLE IF EXISTS Operation_info;
 CREATE TABLE IF NOT EXISTS Operation_info(
   id INT NOT NULL AUTO_INCREMENT,
   operation_code VARCHAR(45) NOT NULL UNIQUE,
-  operation_name VARCHAR(255) NOT NULL,
-  description_text VARCHAR(255),
-  category VARCHAR(45) NOT NULL,
+  operation_name TEXT NOT NULL,
+  category VARCHAR(255) NOT NULL,
   expected_duration INT NOT NULL, 
   cost DECIMAL(10,2) NOT NULL,
   room_type VARCHAR(45) NOT NULL,
   CONSTRAINT chk_room_type CHECK (room_type in ('Χειρουργείο', 'Αίθουσα Επεμβάσεων')),
-  CONSTRAINT chk_category CHECK (category in ('Χειρουργική', 'Διαγνωστική', 'Θεραπευτική')),
   PRIMARY KEY (id)
 );
 
