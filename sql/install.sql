@@ -49,80 +49,80 @@ CREATE TABLE IF NOT EXISTS Doctor (
     consecutive_night_shifts INT,
     supervisor_AMKA CHAR(11) CHECK (supervisor_AMKA <> AMKA),
     PRIMARY KEY (AMKA, Staff_id, department_code),
-    CONSTRAINT fk_doctor_AMKA FOREIGN KEY (AMKA) REFERENCES Staff (AMKA) ON DELETE CASCADE,
-    CONSTRAINT fk_doctor_Staff_id FOREIGN KEY (Staff_id) REFERENCES Staff (Staff_id) ON DELETE CASCADE,
-    CONSTRAINT fk_doctor_supervisor FOREIGN KEY (supervisor_AMKA) REFERENCES Doctor (AMKA) ON DELETE SET NULL,
-    CONSTRAINT fk_doctor_department FOREIGN KEY (department_code) REFERENCES Department (department_code)
+    CONSTRAINT `fk_doctor_AMKA` FOREIGN KEY (AMKA) REFERENCES Staff (AMKA) ON DELETE CASCADE,
+    CONSTRAINT `fk_doctor_Staff_id` FOREIGN KEY (Staff_id) REFERENCES Staff (Staff_id) ON DELETE CASCADE,
+    CONSTRAINT `fk_doctor_supervisor` FOREIGN KEY (supervisor_AMKA) REFERENCES Doctor (AMKA) ON DELETE SET NULL,
+    CONSTRAINT `fk_doctor_department` FOREIGN KEY (department_code) REFERENCES Department (department_code)
 );
 
-DROP TABLE IF EXISTS `Nurse`;
+DROP TABLE IF EXISTS Nurse;
 
-CREATE TABLE IF NOT EXISTS `Nurse` (
-    `AMKA` CHAR(11) NOT NULL UNIQUE,
-    `Staff_id` INT NOT NULL UNIQUE,
-    `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Assistant Nurse', 'Nurse', 'Head Nurse')),
-    `department_code` INT NOT NULL,
-    `monthly_shifts_worked` INT,
-    `consecutive_night_shifts` INT,
-    PRIMARY KEY (`AMKA`, `Staff_id`),
-    CONSTRAINT `fk_nurse_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_nurse_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_nurse_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`)
+CREATE TABLE IF NOT EXISTS Nurse (
+    AMKA CHAR(11) NOT NULL UNIQUE,
+    Staff_id INT NOT NULL UNIQUE,
+    rank VARCHAR(45) NOT NULL CHECK (rank IN ('Assistant Nurse', 'Nurse', 'Head Nurse')),
+    department_code INT NOT NULL,
+    monthly_shifts_worked INT,
+    consecutive_night_shifts INT,
+    PRIMARY KEY (AMKA, Staff_id),
+    CONSTRAINT `fk_nurse_AMKA` FOREIGN KEY (AMKA) REFERENCES Staff (AMKA) ON DELETE CASCADE,
+    CONSTRAINT `fk_nurse_Staff_id` FOREIGN KEY (Staff_id) REFERENCES Staff (Staff_id) ON DELETE CASCADE,
+    CONSTRAINT `fk_nurse_department` FOREIGN KEY (department_code) REFERENCES Department (department_code)
 );
 
-DROP TABLE IF EXISTS `Administrative_staff`;
+DROP TABLE IF EXISTS Administrative_staff;
 
-CREATE TABLE IF NOT EXISTS `Administrative_staff` (
-    `AMKA` CHAR(11) NOT NULL UNIQUE,
-    `Staff_id` INT NOT NULL UNIQUE,
-    `role` VARCHAR(45) NOT NULL,
-    `office` VARCHAR(45) NOT NULL,
-    `department_code` INT NOT NULL,
-    `monthly_shifts_worked` INT,
-    `consecutive_night_shifts` INT,
-    PRIMARY KEY (`AMKA`, `Staff_id`),
-    CONSTRAINT `fk_Admin_Staff` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_Admin_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_Administrator_Department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`)
+CREATE TABLE IF NOT EXISTS Administrative_staff (
+    AMKA CHAR(11) NOT NULL UNIQUE,
+    Staff_id INT NOT NULL UNIQUE,
+    role VARCHAR(45) NOT NULL,
+    office VARCHAR(45) NOT NULL,
+    department_code INT NOT NULL,
+    monthly_shifts_worked INT,
+    consecutive_night_shifts INT,
+    PRIMARY KEY (AMKA, Staff_id),
+    CONSTRAINT `fk_Admin_Staff` FOREIGN KEY (AMKA) REFERENCES Staff (AMKA) ON DELETE CASCADE,
+    CONSTRAINT `fk_Admin_Staff_id` FOREIGN KEY (Staff_id) REFERENCES Staff (Staff_id) ON DELETE CASCADE,
+    CONSTRAINT `fk_Administrator_Department` FOREIGN KEY (department_code) REFERENCES Department (department_code)
 );
 
-DROP TABLE IF EXISTS `Beds`;
+DROP TABLE IF EXISTS Beds;
 
-CREATE TABLE IF NOT EXISTS `Beds` (
-    `id_number` INT NOT NULL UNIQUE AUTO_INCREMENT,
-    `type` VARCHAR(45) NOT NULL,
-    `status` VARCHAR(45) NOT NULL CHECK (`status` IN ('Occupied', 'Available', 'Under Maintenance')),
-    `department_code` INT NOT NULL,
-    PRIMARY KEY (`id_number`),
-    CONSTRAINT `fk_Beds_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS Beds (
+    id_number INT NOT NULL UNIQUE AUTO_INCREMENT,
+    type VARCHAR(45) NOT NULL,
+    status VARCHAR(45) NOT NULL CHECK (status IN ('Occupied', 'Available', 'Under Maintenance')),
+    department_code INT NOT NULL,
+    PRIMARY KEY (id_number),
+    CONSTRAINT `fk_Beds_department` FOREIGN KEY (department_code) REFERENCES Department (department_code) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS `Cost_Calculation`;
+DROP TABLE IF EXISTS Cost_Calculation;
 
-CREATE TABLE IF NOT EXISTS `Cost_Calculation` (
-    `KEN` VARCHAR(5) NOT NULL,
-    `base_cost` INT NOT NULL,
-    `MDN` INT NOT NULL,    
-    PRIMARY KEY (`KEN`)
+CREATE TABLE IF NOT EXISTS Cost_Calculation (
+    KEN VARCHAR(5) NOT NULL,
+    base_cost INT NOT NULL,
+    MDN INT NOT NULL,    
+    PRIMARY KEY (KEN)
 );
 
-DROP TABLE IF EXISTS `Patient`;
+DROP TABLE IF EXISTS Patient;
 
-CREATE TABLE IF NOT EXISTS `Patient` (
-    `AMKA` CHAR(11) NOT NULL UNIQUE,
-    `first_name` VARCHAR(45) NOT NULL,
-    `last_name` VARCHAR(45) NOT NULL,
-    `fathers_name` VARCHAR(45) NOT NULL,
-    `date_of_birth` DATE NOT NULL,
-    `sex` VARCHAR(1) NOT NULL,
-    `weight` DECIMAL(5,2) NOT NULL,
-    `height` DECIMAL(5,2) NOT NULL,
-    `address` VARCHAR(255) NOT NULL,
-    `phone_number` VARCHAR(12) NOT NULL,
-    `email` VARCHAR(255) NOT NULL,
-    `occupation` VARCHAR(45) NOT NULL,
-    `nationality` VARCHAR(45) NOT NULL,
-    PRIMARY KEY (`AMKA`)
+CREATE TABLE IF NOT EXISTS Patient (
+    AMKA CHAR(11) NOT NULL UNIQUE,
+    first_name VARCHAR(45) NOT NULL,
+    last_name VARCHAR(45) NOT NULL,
+    fathers_name VARCHAR(45) NOT NULL,
+    date_of_birth DATE NOT NULL,
+    sex VARCHAR(1) NOT NULL,
+    weight DECIMAL(5,2) NOT NULL,
+    height DECIMAL(5,2) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(12) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    occupation VARCHAR(45) NOT NULL,
+    nationality VARCHAR(45) NOT NULL,
+    PRIMARY KEY (AMKA)
 );
 
 -- lookup table
@@ -135,63 +135,63 @@ CREATE TABLE IF NOT EXISTS Diagnoses(
 );
 
 
-DROP TABLE IF EXISTS `Hospitalization`;
+DROP TABLE IF EXISTS Hospitalization;
 
-CREATE TABLE IF NOT EXISTS `Hospitalization` (
-    `hospitalization_id` INT NOT NULL AUTO_INCREMENT,
-    `AMKA` CHAR(11) NOT NULL,
-    `department_code` INT NOT NULL,
-    `bed_id_number` INT NOT NULL UNIQUE,
-    `admission_date` DATE NOT NULL,
-    `discharge_date` DATE,
-    `KEN_id` VARCHAR(5) NOT NULL,
-    `admission_diagnosis_ICD` VARCHAR(11) NOT NULL,
-    `discharge_diagnosis_ICD` VARCHAR(11),
-    `admission_diagnosis_description` VARCHAR(255) NOT NULL,
-    `discharge_diagnosis_description` VARCHAR(255),
-    `hospitalization_cost` DECIMAL(8, 2),
-    PRIMARY KEY (`hospitalization_id`,`AMKA`, `admission_date`),
-    CONSTRAINT `fk_Hospitalization_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`),
-    CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (`KEN_id`) REFERENCES `Cost_Calculation` (`KEN`),
-    CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (`bed_id_number`) REFERENCES `Beds` (`id_number`),
-    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (`admission_diagnosis_ICD`) REFERENCES `Diagnoses` (code_icd10),
-    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (`discharge_diagnosis_ICD`) REFERENCES `Diagnoses` (code_icd10)
+CREATE TABLE IF NOT EXISTS Hospitalization (
+    hospitalization_id INT NOT NULL AUTO_INCREMENT,
+    AMKA CHAR(11) NOT NULL,
+    department_code INT NOT NULL,
+    bed_id_number INT NOT NULL UNIQUE,
+    admission_date DATE NOT NULL,
+    discharge_date DATE,
+    KEN_id VARCHAR(5) NOT NULL,
+    admission_diagnosis_ICD VARCHAR(11) NOT NULL,
+    discharge_diagnosis_ICD VARCHAR(11),
+    admission_diagnosis_description VARCHAR(255) NOT NULL,
+    discharge_diagnosis_description VARCHAR(255),
+    hospitalization_cost DECIMAL(8, 2),
+    PRIMARY KEY (hospitalization_id, AMKA, admission_date),
+    CONSTRAINT `fk_Hospitalization_AMKA` FOREIGN KEY (AMKA) REFERENCES Patient (AMKA) ON DELETE CASCADE,
+    CONSTRAINT `fk_Hospitalization_department` FOREIGN KEY (department_code) REFERENCES Department (department_code),
+    CONSTRAINT `fk_Hospitalization_cost_calculation` FOREIGN KEY (KEN_id) REFERENCES Cost_Calculation (KEN),
+    CONSTRAINT `fk_Hospitalization_bed` FOREIGN KEY (bed_id_number) REFERENCES Beds (id_number),
+    CONSTRAINT `fk_Hospitalization_admission_diagnosis` FOREIGN KEY (admission_diagnosis_ICD) REFERENCES Diagnoses (code_icd10),
+    CONSTRAINT `fk_Hospitalization_discharge_diagnosis` FOREIGN KEY (discharge_diagnosis_ICD) REFERENCES Diagnoses (code_icd10)
 );
 
-DROP TABLE IF EXISTS `Insurance_Type`;
+DROP TABLE IF EXISTS Insurance_Type;
 
-CREATE TABLE IF NOT EXISTS `Insurance_Type`(
-    `patient_AMKA` CHAR(11) NOT NULL UNIQUE,
-    `insurance_provider` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`patient_AMKA`),
+CREATE TABLE IF NOT EXISTS Insurance_Type(
+    patient_AMKA CHAR(11) NOT NULL UNIQUE,
+    insurance_provider VARCHAR(255) NOT NULL,
+    PRIMARY KEY (patient_AMKA),
     CONSTRAINT `fk_insurance_type_AMKA` FOREIGN KEY (`patient_AMKA`) REFERENCES `Patient` (`AMKA`) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS `Shifts`;
+DROP TABLE IF EXISTS Shifts;
 
-CREATE TABLE IF NOT EXISTS `Shifts` (
-    `shift_id` INT NOT NULL AUTO_INCREMENT,
-    `shift_type` VARCHAR(20) NOT NULL CHECK (`shift_type` IN ('Morning', 'Afternoon', 'Night')),
-    `shift_status` VARCHAR(45) CHECK (`shift_status` IN ('Scheduled', 'Draft')),
-    `start_time` TIME NOT NULL,
-    `end_time` TIME NOT NULL,
-   `start_date` DATE NOT NULL,
-   `staff_AMKA` CHAR(11) NOT NULL,
-    `staff_id` INT NOT NULL,
-    PRIMARY KEY (`shift_id`),
-    CONSTRAINT `fk_on_duty_staff` FOREIGN KEY (`staff_AMKA`, `staff_id`) REFERENCES `Staff` (`AMKA`, `Staff_id`) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS Shifts (
+    shift_id INT NOT NULL AUTO_INCREMENT,
+    shift_type VARCHAR(20) NOT NULL CHECK (shift_type IN ('Morning', 'Afternoon', 'Night')),
+    shift_status VARCHAR(45) CHECK (shift_status IN ('Scheduled', 'Draft')),
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    start_date DATE NOT NULL,
+    staff_AMKA CHAR(11) NOT NULL,
+    staff_id INT NOT NULL,
+    PRIMARY KEY (shift_id),
+    CONSTRAINT `fk_on_duty_staff` FOREIGN KEY (staff_AMKA, staff_id) REFERENCES `Staff` (AMKA, Staff_id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS `On_Duty`;
+DROP TABLE IF EXISTS On_Duty;
 
-CREATE TABLE IF NOT EXISTS `On_Duty` (
-    `on_duty_id` INT NOT NULL AUTO_INCREMENT,
-    `department_code` INT NOT NULL,
-    `shift_id` INT NOT NULL,
-    PRIMARY KEY (`on_duty_id`, `department_code`, `shift_id`),
-    CONSTRAINT `fk_on_duty_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`) ON DELETE CASCADE,
-    CONSTRAINT `fk_on_duty_shifts` FOREIGN KEY (`shift_id`) REFERENCES `Shifts` (`shift_id`) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS On_Duty (
+    on_duty_id INT NOT NULL AUTO_INCREMENT,
+    department_code INT NOT NULL,
+    shift_id INT NOT NULL,
+    PRIMARY KEY (on_duty_id, department_code, shift_id),
+    CONSTRAINT `fk_on_duty_department` FOREIGN KEY (department_code) REFERENCES `Department` (department_code) ON DELETE CASCADE,
+    CONSTRAINT `fk_on_duty_shifts` FOREIGN KEY (shift_id) REFERENCES `Shifts` (shift_id) ON DELETE CASCADE
 );
 
 -- epeigonta peristatika - dialogh
@@ -398,68 +398,68 @@ CREATE TABLE IF NOT EXISTS Prescription (
 DROP TRIGGER IF EXISTS is_doctor_ins;
 DROP TRIGGER IF EXISTS is_doctor_upd;
 DROP TRIGGER IF EXISTS check_department_head_ins;
-DROP TRIGGER IF EXISTS `check_department_head_upd`;
-DROP TRIGGER IF EXISTS `check_if_doctor_exists`;
-DROP TRIGGER IF EXISTS `check_if_nurse_exists`;
-DROP TRIGGER IF EXISTS `check_if_admin_exists`;
-DROP TRIGGER IF EXISTS `check_is_intern_supervisor`;
-DROP TRIGGER IF EXISTS `check_rank_ins`;
-DROP TRIGGER IF EXISTS `check_rank_upd`;
-DROP TRIGGER IF EXISTS `check_supervision_chain_ins`;
-DROP TRIGGER IF EXISTS `check_supervision_chain_upd`;
-DROP TRIGGER IF EXISTS `decrease_bed_count`;
-DROP TRIGGER IF EXISTS `check_hospitalization_dates_ins`;
-DROP TRIGGER IF EXISTS `check_hospitalization_dates_upd`;
-DROP TRIGGER IF EXISTS `check_discharge_data`;
-DROP TRIGGER IF EXISTS `set_bed_occupied`;
-DROP TRIGGER IF EXISTS `set_bed_available`;
-DROP TRIGGER IF EXISTS `check_bed_availability`;
-DROP FUNCTION IF EXISTS `calculate_shift_members`;
-DROP FUNCTION IF EXISTS `exists_senior_doctor`;
-DROP FUNCTION IF EXISTS `is_intern`;
-DROP FUNCTION IF EXISTS `f_check_for_senior_doctor`;
-DROP TRIGGER IF EXISTS `update_shift_count_ins`;
-DROP TRIGGER IF EXISTS `update_shift_count_upd`;
-DROP TRIGGER IF EXISTS `schedule_shift_on_duty_ins`;
-DROP TRIGGER IF EXISTS `schedule_shift_on_duty_upd`;
-DROP TRIGGER IF EXISTS `check_for_senior_doctor_upd`;
-DROP TRIGGER IF EXISTS `check_for_senior_doctor_ins`;
-DROP TRIGGER IF EXISTS `set_shift_validity_ins`;
-DROP TRIGGER IF EXISTS `set_shift_validity_upd`;
-DROP TRIGGER IF EXISTS `check_max_shifts_upd`;
-DROP TRIGGER IF EXISTS `check_max_shifts_ins`;
-DROP TRIGGER IF EXISTS `check_if_shift_exists`;
-DROP TRIGGER IF EXISTS `check_shift_type_ins`;
-DROP TRIGGER IF EXISTS `check_shift_type_upd`;
-DROP TRIGGER IF EXISTS `check_consecutive_shifts_ins`;
-DROP TRIGGER IF EXISTS `check_consecutive_shifts_upd`;
-DROP TRIGGER IF EXISTS `check_night_shift_validity_ins`;
-DROP TRIGGER IF EXISTS `check_night_shift_validity_upd`;
-DROP TRIGGER IF EXISTS `reschedule_shift_del`;
-DROP FUNCTION IF EXISTS `calculate_consecutive_night_shifts`;
-DROP TRIGGER IF EXISTS `calculate_total_cost`;
+DROP TRIGGER IF EXISTS check_department_head_upd;
+DROP TRIGGER IF EXISTS check_if_doctor_exists;
+DROP TRIGGER IF EXISTS check_if_nurse_exists;
+DROP TRIGGER IF EXISTS check_if_admin_exists;
+DROP TRIGGER IF EXISTS check_is_intern_supervisor;
+DROP TRIGGER IF EXISTS check_rank_ins;
+DROP TRIGGER IF EXISTS check_rank_upd;
+DROP TRIGGER IF EXISTS check_supervision_chain_ins;
+DROP TRIGGER IF EXISTS check_supervision_chain_upd;
+DROP TRIGGER IF EXISTS decrease_bed_count;
+DROP TRIGGER IF EXISTS check_hospitalization_dates_ins;
+DROP TRIGGER IF EXISTS check_hospitalization_dates_upd;
+DROP TRIGGER IF EXISTS check_discharge_data;
+DROP TRIGGER IF EXISTS set_bed_occupied;
+DROP TRIGGER IF EXISTS set_bed_available;
+DROP TRIGGER IF EXISTS check_bed_availability;
+DROP FUNCTION IF EXISTS calculate_shift_members;
+DROP FUNCTION IF EXISTS exists_senior_doctor;
+DROP FUNCTION IF EXISTS is_intern;
+DROP FUNCTION IF EXISTS f_check_for_senior_doctor;
+DROP TRIGGER IF EXISTS update_shift_count_ins;
+DROP TRIGGER IF EXISTS update_shift_count_upd;
+DROP TRIGGER IF EXISTS schedule_shift_on_duty_ins;
+DROP TRIGGER IF EXISTS schedule_shift_on_duty_upd;
+DROP TRIGGER IF EXISTS check_for_senior_doctor_upd;
+DROP TRIGGER IF EXISTS check_for_senior_doctor_ins;
+DROP TRIGGER IF EXISTS set_shift_validity_ins;
+DROP TRIGGER IF EXISTS set_shift_validity_upd;
+DROP TRIGGER IF EXISTS check_max_shifts_upd;
+DROP TRIGGER IF EXISTS check_max_shifts_ins;
+DROP TRIGGER IF EXISTS check_if_shift_exists;
+DROP TRIGGER IF EXISTS check_shift_type_ins;
+DROP TRIGGER IF EXISTS check_shift_type_upd;
+DROP TRIGGER IF EXISTS check_consecutive_shifts_ins;
+DROP TRIGGER IF EXISTS check_consecutive_shifts_upd;
+DROP TRIGGER IF EXISTS check_night_shift_validity_ins;
+DROP TRIGGER IF EXISTS check_night_shift_validity_upd;
+DROP TRIGGER IF EXISTS reschedule_shift_del;
+DROP FUNCTION IF EXISTS calculate_consecutive_night_shifts;
+DROP TRIGGER IF EXISTS calculate_total_cost;
 
 DELIMITER $$
 
-CREATE TRIGGER `is_doctor_ins` BEFORE INSERT ON `Department`
+CREATE TRIGGER is_doctor_ins BEFORE INSERT ON Department
 FOR EACH ROW
 BEGIN
-    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> 'Doctor' THEN
+    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> Doctor THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Department head must be a doctor.';
     END IF; 
 END$$
 
-CREATE TRIGGER `is_doctor_upd` BEFORE UPDATE ON `Department`
+CREATE TRIGGER is_doctor_upd BEFORE UPDATE ON Department
 FOR EACH ROW
 BEGIN
-    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> 'Doctor' THEN
+    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> Doctor THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Department head must be a doctor.';
     END IF; 
 END$$
 
-CREATE TRIGGER `check_department_head_ins` BEFORE INSERT ON `Department`
+CREATE TRIGGER check_department_head_ins BEFORE INSERT ON Department
 FOR EACH ROW
 BEGIN
     DECLARE dept_head CHAR(11);
@@ -471,7 +471,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_department_head_upd` BEFORE UPDATE ON `Department`
+CREATE TRIGGER check_department_head_upd BEFORE UPDATE ON Department
 FOR EACH ROW
 BEGIN
     DECLARE dept_head CHAR(11);
@@ -484,7 +484,7 @@ BEGIN
 END$$
 
 
-CREATE TRIGGER `check_if_doctor_exists` BEFORE INSERT ON `Doctor`
+CREATE TRIGGER check_if_doctor_exists BEFORE INSERT ON Doctor
 FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Staff WHERE AMKA = new.AMKA AND staff_type = 'Doctor') THEN
@@ -494,7 +494,7 @@ BEGIN
 END$$
 
 
-CREATE TRIGGER `check_if_nurse_exists` BEFORE INSERT ON `Nurse`
+CREATE TRIGGER check_if_nurse_exists BEFORE INSERT ON Nurse
 FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Staff WHERE AMKA = new.AMKA AND staff_type = 'Nurse') THEN
@@ -505,7 +505,7 @@ END$$
 
 
 
-CREATE TRIGGER `check_if_admin_exists` BEFORE INSERT ON `Administrative_staff`
+CREATE TRIGGER check_if_admin_exists BEFORE INSERT ON Administrative_staff
 FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Staff WHERE AMKA = new.AMKA AND staff_type = 'Administrative Staff') THEN
@@ -514,7 +514,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_is_intern_supervisor` BEFORE DELETE ON `Doctor`
+CREATE TRIGGER check_is_intern_supervisor BEFORE DELETE ON Doctor
 FOR EACH ROW
 BEGIN
     IF EXISTS (SELECT * FROM Doctor WHERE supervisor_AMKA = old.AMKA AND rank = 'Intern') THEN
@@ -523,7 +523,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_rank_ins` BEFORE INSERT ON `Doctor`
+CREATE TRIGGER check_rank_ins BEFORE INSERT ON Doctor
 FOR EACH ROW
 BEGIN
     IF (new.rank = 'Intern') AND (new.supervisor_AMKA IS NULL) THEN
@@ -536,7 +536,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_rank_upd` BEFORE UPDATE ON `Doctor`
+CREATE TRIGGER check_rank_upd BEFORE UPDATE ON Doctor
 FOR EACH ROW
 BEGIN
     IF (new.rank = 'Intern') AND (new.supervisor_AMKA IS NULL) THEN
@@ -549,7 +549,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_supervision_chain_ins` BEFORE INSERT ON `Doctor`
+CREATE TRIGGER check_supervision_chain_ins BEFORE INSERT ON Doctor
 FOR EACH ROW
 BEGIN
     IF(SELECT AMKA, supervisor_AMKA FROM Doctor WHERE AMKA = new.supervisor_AMKA AND supervisor_AMKA = new.AMKA) THEN
@@ -558,7 +558,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_supervision_chain_upd` BEFORE UPDATE ON `Doctor`
+CREATE TRIGGER check_supervision_chain_upd BEFORE UPDATE ON Doctor
 FOR EACH ROW
 BEGIN
     IF(SELECT AMKA, supervisor_AMKA FROM Doctor WHERE AMKA = new.supervisor_AMKA AND supervisor_AMKA = new.AMKA) THEN
@@ -567,7 +567,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `increase_bed_count` AFTER INSERT ON `Beds`
+CREATE TRIGGER increase_bed_count AFTER INSERT ON Beds
 FOR EACH ROW
 BEGIN
     UPDATE Department
@@ -575,7 +575,7 @@ BEGIN
     WHERE department_code = new.department_code;
 END$$
 
-CREATE TRIGGER `decrease_bed_count` AFTER DELETE ON `Beds`
+CREATE TRIGGER decrease_bed_count AFTER DELETE ON Beds
 FOR EACH ROW
 BEGIN
     UPDATE Department
@@ -583,7 +583,7 @@ BEGIN
     WHERE department_code = old.department_code;
 END$$
 
-CREATE TRIGGER `check_hospitalization_dates_ins` BEFORE INSERT ON `Hospitalization`
+CREATE TRIGGER check_hospitalization_dates_ins BEFORE INSERT ON Hospitalization
 FOR EACH ROW
 BEGIN
     IF new.admission_date > new.discharge_date THEN
@@ -592,7 +592,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_hospitalization_dates_upd` BEFORE UPDATE ON `Hospitalization`
+CREATE TRIGGER check_hospitalization_dates_upd BEFORE UPDATE ON Hospitalization
 FOR EACH ROW
 BEGIN
     IF new.admission_date > new.discharge_date THEN
@@ -601,7 +601,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_discharge_data` BEFORE UPDATE ON `Hospitalization`
+CREATE TRIGGER check_discharge_data BEFORE UPDATE ON Hospitalization
 FOR EACH ROW
 BEGIN
     IF new.discharge_date IS NOT NULL AND old.discharge_date IS NULL THEN
@@ -612,7 +612,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `set_bed_occupied` AFTER INSERT ON `Hospitalization`
+CREATE TRIGGER set_bed_occupied AFTER INSERT ON Hospitalization
 FOR EACH ROW
 BEGIN
     UPDATE Beds
@@ -620,7 +620,7 @@ BEGIN
     WHERE id_number = new.bed_id_number;
 END$$
 
-CREATE TRIGGER `set_bed_available` AFTER UPDATE ON `Hospitalization`
+CREATE TRIGGER set_bed_available AFTER UPDATE ON Hospitalization
 FOR EACH ROW
 BEGIN
     IF new.discharge_date IS NOT NULL THEN
@@ -630,7 +630,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_bed_availability` BEFORE INSERT ON `Hospitalization`
+CREATE TRIGGER check_bed_availability BEFORE INSERT ON Hospitalization
 FOR EACH ROW
 BEGIN
     IF (SELECT status FROM Beds where id_number = new.bed_id_number) <> 'Available' THEN
@@ -639,7 +639,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE FUNCTION `calculate_shift_members` (p_shift_id INT, p_start_time TIME, p_start_date DATE) RETURNS TINYINT(1)
+CREATE FUNCTION calculate_shift_members (p_shift_id INT, p_start_time TIME, p_start_date DATE) RETURNS TINYINT(1)
 BEGIN
     DECLARE doctor_count INT;
     DECLARE nurse_count INT;
@@ -658,7 +658,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE FUNCTION `exists_senior_doctor`(p_start_time TIME, p_start_date DATE, p_dept_code INT) RETURNS TINYINT(1)
+CREATE FUNCTION exists_senior_doctor(p_start_time TIME, p_start_date DATE, p_dept_code INT) RETURNS TINYINT(1)
 BEGIN
     DECLARE senior_doctor_count INT;
 
@@ -674,7 +674,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE FUNCTION `is_intern` (p_staff_id INT) RETURNS TINYINT(1)
+CREATE FUNCTION is_intern (p_staff_id INT) RETURNS TINYINT(1)
 BEGIN
       IF (SELECT rank FROM Doctor WHERE Staff_id = p_staff_id) = 'Intern' THEN
         RETURN TRUE;
@@ -683,7 +683,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE FUNCTION `f_check_for_senior_doctor`(p_staff_id INT, p_start_time TIME, p_start_date DATE, p_dept_code INT) RETURNS TINYINT(1)
+CREATE FUNCTION f_check_for_senior_doctor(p_staff_id INT, p_start_time TIME, p_start_date DATE, p_dept_code INT) RETURNS TINYINT(1)
 BEGIN
     DECLARE s_type VARCHAR(45);
     SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = p_staff_id;
@@ -699,7 +699,7 @@ BEGIN
     RETURN exists_senior_doctor(p_start_time, p_start_date, p_dept_code);
 END$$
 
-CREATE TRIGGER `update_shift_count_ins` AFTER INSERT ON `Shifts`
+CREATE TRIGGER update_shift_count_ins AFTER INSERT ON Shifts
 FOR EACH ROW
 BEGIN
     DECLARE s_type VARCHAR(45);
@@ -734,7 +734,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `update_shift_count_upd` AFTER UPDATE ON `Shifts`
+CREATE TRIGGER update_shift_count_upd AFTER UPDATE ON Shifts
 FOR EACH ROW
 BEGIN
     DECLARE s_type VARCHAR(45);
@@ -772,7 +772,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `set_shift_validity_ins` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER set_shift_validity_ins BEFORE INSERT ON Shifts
 FOR EACH ROW
 BEGIN
     IF CURDATE() > NEW.start_date THEN
@@ -781,7 +781,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `set_shift_validity_upd` BEFORE UPDATE ON `Shifts`
+CREATE TRIGGER set_shift_validity_upd BEFORE UPDATE ON Shifts
 FOR EACH ROW
 BEGIN
     IF CURDATE() > NEW.start_date THEN
@@ -790,8 +790,8 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_for_senior_doctor_upd` BEFORE UPDATE ON `Shifts`
-FOR EACH ROW FOLLOWS `set_shift_validity_upd`
+CREATE TRIGGER check_for_senior_doctor_upd BEFORE UPDATE ON Shifts
+FOR EACH ROW FOLLOWS set_shift_validity_upd
 BEGIN
     DECLARE v_dept INT;
     SELECT department_code INTO v_dept FROM Doctor WHERE AMKA = NEW.staff_AMKA;
@@ -808,8 +808,8 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_for_senior_doctor_ins` BEFORE INSERT ON `Shifts`
-FOR EACH ROW FOLLOWS `set_shift_validity_ins`
+CREATE TRIGGER check_for_senior_doctor_ins BEFORE INSERT ON Shifts
+FOR EACH ROW FOLLOWS set_shift_validity_ins
 BEGIN
     DECLARE v_dept INT;
     SELECT department_code INTO v_dept FROM Doctor WHERE AMKA = NEW.staff_AMKA;
@@ -826,8 +826,8 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_shift_type_ins` BEFORE INSERT ON `Shifts`
-FOR EACH ROW FOLLOWS `set_shift_validity_ins`
+CREATE TRIGGER check_shift_type_ins BEFORE INSERT ON Shifts
+FOR EACH ROW FOLLOWS set_shift_validity_ins
 BEGIN
     IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
         SET NEW.shift_type = 'Morning';
@@ -841,8 +841,8 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_shift_type_upd` BEFORE UPDATE ON `Shifts`
-FOR EACH ROW FOLLOWS `set_shift_validity_upd`
+CREATE TRIGGER check_shift_type_upd BEFORE UPDATE ON Shifts
+FOR EACH ROW FOLLOWS set_shift_validity_upd
 BEGIN
     IF HOUR(NEW.start_time) >= 7 AND HOUR(NEW.start_time) < 15 THEN
         SET NEW.shift_type = 'Morning';
@@ -856,8 +856,8 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_night_shift_validity_ins` BEFORE INSERT ON `Shifts`
-FOR EACH ROW FOLLOWS `check_shift_type_ins`
+CREATE TRIGGER check_night_shift_validity_ins BEFORE INSERT ON Shifts
+FOR EACH ROW FOLLOWS check_shift_type_ins
 BEGIN
     DECLARE s_type VARCHAR(45);
     SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
@@ -883,8 +883,8 @@ BEGIN
     END IF;    
 END$$
 
-CREATE TRIGGER `check_night_shift_validity_upd` BEFORE UPDATE ON `Shifts`
-FOR EACH ROW FOLLOWS `check_shift_type_upd`
+CREATE TRIGGER check_night_shift_validity_upd BEFORE UPDATE ON Shifts
+FOR EACH ROW FOLLOWS check_shift_type_upd
 BEGIN
     DECLARE s_type VARCHAR(45);
     SELECT staff_type INTO s_type FROM Staff WHERE Staff_id = NEW.staff_id AND AMKA = NEW.staff_AMKA;
@@ -910,7 +910,7 @@ BEGIN
     END IF;    
 END$$
 
-CREATE TRIGGER `check_max_shifts_upd` BEFORE UPDATE ON `Shifts`
+CREATE TRIGGER check_max_shifts_upd BEFORE UPDATE ON Shifts
 FOR EACH ROW
 BEGIN
     DECLARE last_shift_date DATE;
@@ -945,7 +945,7 @@ BEGIN
     END CASE;    
 END$$
 
-CREATE TRIGGER `check_max_shifts_ins` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER check_max_shifts_ins BEFORE INSERT ON Shifts
 FOR EACH ROW
 BEGIN
     DECLARE last_shift_date DATE;
@@ -980,7 +980,7 @@ BEGIN
     END CASE;   
 END$$
 
-CREATE TRIGGER `check_if_shift_exists` BEFORE INSERT ON `On_Duty`
+CREATE TRIGGER check_if_shift_exists BEFORE INSERT ON On_Duty
 FOR EACH ROW
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Shifts WHERE NEW.shift_id = shift_id) THEN
@@ -989,7 +989,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_consecutive_shifts_ins` BEFORE INSERT ON `Shifts`
+CREATE TRIGGER check_consecutive_shifts_ins BEFORE INSERT ON Shifts
 FOR EACH ROW
 BEGIN
     DECLARE last_shift DATETIME;
@@ -1004,7 +1004,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_consecutive_shifts_upd` BEFORE UPDATE ON `Shifts`
+CREATE TRIGGER check_consecutive_shifts_upd BEFORE UPDATE ON Shifts
 FOR EACH ROW
 BEGIN
     DECLARE last_shift DATETIME;
@@ -1019,7 +1019,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `reschedule_shift_del` AFTER DELETE ON `Shifts`
+CREATE TRIGGER reschedule_shift_del AFTER DELETE ON Shifts
 FOR EACH ROW
 BEGIN
     DECLARE v_dept INT;
@@ -1064,7 +1064,7 @@ BEGIN
     END IF; 
 END$$
 
-CREATE FUNCTION `calculate_consecutive_night_shifts`(p_staff_id INT, p_start_date DATE) RETURNS INT
+CREATE FUNCTION calculate_consecutive_night_shifts(p_staff_id INT, p_start_date DATE) RETURNS INT
 BEGIN
     DECLARE v_count INT;
     DECLARE v_last_non_night_shift DATE;
@@ -1073,7 +1073,7 @@ BEGIN
     RETURN v_count;
 END$$
 
-CREATE TRIGGER `calculate_total_cost` BEFORE UPDATE ON `Hospitalization`
+CREATE TRIGGER calculate_total_cost BEFORE UPDATE ON Hospitalization
 FOR EACH ROW
 BEGIN
     DECLARE v_total_hospitalization_days DATE;
@@ -1094,7 +1094,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_if_on_call_surgeon_ins` BEFORE INSERT ON `Operation`
+CREATE TRIGGER check_if_on_call_surgeon_ins BEFORE INSERT ON Operation
 FOR EACH ROW
 BEGIN
     DECLARE v_shift_date DATE;
@@ -1114,7 +1114,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_if_on_call_surgeon_upd` BEFORE UPDATE ON `Operation`
+CREATE TRIGGER check_if_on_call_surgeon_upd BEFORE UPDATE ON Operation
 FOR EACH ROW
 BEGIN
     DECLARE v_shift_date DATE;
@@ -1134,7 +1134,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_if_on_call_staff_ins` BEFORE INSERT ON `Assistant_Staff`
+CREATE TRIGGER check_if_on_call_staff_ins BEFORE INSERT ON Assistant_Staff
 FOR EACH ROW
 BEGIN
     DECLARE v_shift_date DATE;
@@ -1158,7 +1158,7 @@ BEGIN
     END IF;
 END$$
 
-CREATE TRIGGER `check_if_on_call_staff_upd` BEFORE UPDATE ON `Assistant_Staff`
+CREATE TRIGGER check_if_on_call_staff_upd BEFORE UPDATE ON Assistant_Staff
 FOR EACH ROW
 BEGIN
     DECLARE v_shift_date DATE;
