@@ -347,8 +347,8 @@ DROP TABLE IF EXISTS Drug_Info_Active_Substance;
 -- isws na vgalw to id giati sto prescription exw to product name pou zhtaei h ekfwnhsh
 CREATE TABLE IF NOT EXISTS Drug_Info_Active_Substance(
   id INT NOT NULL AUTO_INCREMENT,
-  product_name VARCHAR(45) NOT NULL, -- prepei na megalwsei to onoma
-  active_substance VARCHAR(45) NOT NULL, 
+  product_name VARCHAR(255) NOT NULL, -- prepei na megalwsei to onoma
+  active_substance VARCHAR(255) NOT NULL, 
   route_of_administration VARCHAR(255) NOT NULL,
   product_authorization_country VARCHAR(45) NOT NULL,
   marketing_authorization_holder VARCHAR(255) NOT NULL,
