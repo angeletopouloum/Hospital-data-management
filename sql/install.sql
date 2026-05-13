@@ -444,7 +444,7 @@ DELIMITER $$
 CREATE TRIGGER is_doctor_ins BEFORE INSERT ON Department
 FOR EACH ROW
 BEGIN
-    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> Doctor THEN
+    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> 'Doctor' THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Department head must be a doctor.';
     END IF; 
@@ -453,7 +453,7 @@ END$$
 CREATE TRIGGER is_doctor_upd BEFORE UPDATE ON Department
 FOR EACH ROW
 BEGIN
-    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> Doctor THEN
+    IF (SELECT staff_type FROM Staff WHERE AMKA = NEW.department_head_AMKA) <> 'Doctor' THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Department head must be a doctor.';
     END IF; 
