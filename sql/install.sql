@@ -7,51 +7,52 @@ CREATE SCHEMA HospitalManagement
     COLLATE utf8mb4_unicode_ci;
 USE HospitalManagement;
 
-DROP TABLE IF EXISTS `Staff`;
+DROP TABLE IF EXISTS Staff;
 
-CREATE TABLE IF NOT EXISTS `Staff` (
-    `AMKA` CHAR(11) NOT NULL UNIQUE,
-    `Staff_id` INT NOT NULL UNIQUE AUTO_INCREMENT,
-    `first_name` VARCHAR(45) NOT NULL,
-    `last_name` VARCHAR(45) NOT NULL,
-    `date_of_birth` DATE NOT NULL,
-    `email` VARCHAR(255) NOT NULL,
-    `phone_number` VARCHAR(12) NOT NULL,
-    `hire_date` DATE NOT NULL,
-    `staff_type` VARCHAR(45) NOT NULL CHECK (`staff_type` IN ('Doctor', 'Nurse', 'Administrative Staff')),
-    PRIMARY KEY (`AMKA`, `Staff_id`)
+CREATE TABLE IF NOT EXISTS Staff (
+    AMKA CHAR(11) NOT NULL UNIQUE,
+    Staff_id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    first_name VARCHAR(45) NOT NULL,
+    last_name VARCHAR(45) NOT NULL,
+    date_of_birth DATE NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(12) NOT NULL,
+    hire_date DATE NOT NULL,
+    staff_type VARCHAR(45) NOT NULL CHECK (staff_type IN ('Doctor', 'Nurse', 'Administrative Staff')),
+    PRIMARY KEY (AMKA, Staff_id)
 );
 
-DROP TABLE IF EXISTS `Department`;
+DROP TABLE IF EXISTS Department;
 
-CREATE TABLE IF NOT EXISTS `Department` (
-    `department_code` INT NOT NULL UNIQUE,
-    `name` VARCHAR(45) NOT NULL UNIQUE,
-    `description` VARCHAR(255) NOT NULL,
-    `number_of_beds` INT NOT NULL,
-    `building_floor` VARCHAR(45) NOT NULL,
-    `building` VARCHAR(255) NOT NULL,
-    `department_head_AMKA` CHAR(11) UNIQUE,
-    PRIMARY KEY (`department_code`)
+CREATE TABLE IF NOT EXISTS Department (
+    department_code INT NOT NULL UNIQUE,
+    name VARCHAR(45) NOT NULL UNIQUE,
+    description VARCHAR(255) NOT NULL,
+    number_of_beds INT NOT NULL,
+    building_floor VARCHAR(45) NOT NULL,
+    building VARCHAR(255) NOT NULL,
+    department_head_AMKA CHAR(11) UNIQUE,
+    PRIMARY KEY (department_code)
 );
 
-DROP TABLE IF EXISTS `Doctor`;
+-- NOTE #1 sto constraint department thelei on delete klp?
+DROP TABLE IF EXISTS Doctor;
 
-CREATE TABLE IF NOT EXISTS `Doctor` (
-    `AMKA` CHAR(11) NOT NULL,
-    `Staff_id` INT NOT NULL,
-    `medical_association_license_number` VARCHAR(30) NOT NULL UNIQUE,
-    `specialty` VARCHAR(45) NOT NULL,
-    `rank` VARCHAR(45) NOT NULL CHECK (`rank` IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician')),
-    `department_code` INT NOT NULL,
-    `monthly_shifts_worked` INT,
-    `consecutive_night_shifts` INT,
-    `supervisor_AMKA` CHAR(11) CHECK (`supervisor_AMKA` <> `AMKA`),
-    PRIMARY KEY (`AMKA`, `Staff_id`, `department_code`),
-    CONSTRAINT `fk_doctor_AMKA` FOREIGN KEY (`AMKA`) REFERENCES `Staff` (`AMKA`) ON DELETE CASCADE,
-    CONSTRAINT `fk_doctor_Staff_id` FOREIGN KEY (`Staff_id`) REFERENCES `Staff` (`Staff_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_doctor_supervisor` FOREIGN KEY (`supervisor_AMKA`) REFERENCES `Doctor` (`AMKA`) ON DELETE SET NULL,
-    CONSTRAINT `fk_doctor_department` FOREIGN KEY (`department_code`) REFERENCES `Department` (`department_code`)
+CREATE TABLE IF NOT EXISTS Doctor (
+    AMKA CHAR(11) NOT NULL,
+    Staff_id INT NOT NULL,
+    medical_association_license_number VARCHAR(30) NOT NULL UNIQUE,
+    specialty VARCHAR(45) NOT NULL,
+    rank VARCHAR(45) NOT NULL CHECK (rank IN ('Intern', 'Registrar', 'Senior Registrar', 'Head Physician')),
+    department_code INT NOT NULL,
+    monthly_shifts_worked INT,
+    consecutive_night_shifts INT,
+    supervisor_AMKA CHAR(11) CHECK (supervisor_AMKA <> AMKA),
+    PRIMARY KEY (AMKA, Staff_id, department_code),
+    CONSTRAINT fk_doctor_AMKA FOREIGN KEY (AMKA) REFERENCES Staff (AMKA) ON DELETE CASCADE,
+    CONSTRAINT fk_doctor_Staff_id FOREIGN KEY (Staff_id) REFERENCES Staff (Staff_id) ON DELETE CASCADE,
+    CONSTRAINT fk_doctor_supervisor FOREIGN KEY (supervisor_AMKA) REFERENCES Doctor (AMKA) ON DELETE SET NULL,
+    CONSTRAINT fk_doctor_department FOREIGN KEY (department_code) REFERENCES Department (department_code)
 );
 
 DROP TABLE IF EXISTS `Nurse`;
