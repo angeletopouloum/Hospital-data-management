@@ -1,0 +1,6 @@
+SELECT SUM(c.base_cost), COUNT(h.hospitalization_id) FROM Cost_Calculation c JOIN Hospitalization h ON c.KEN = h.KEN_id JOIN Insurance_Type it ON h.AMKA = it.patient_AMKA GROUP BY h.department_code, YEAR(h.discharge_date), it.insurance_provider;
+
+
+
+
+SELECT COUNT(hospitalization_id) FROM Hospitalization h JOIN Insurance_Type it ON h.AMKA = it.patient_AMKA GROUP BY it.Insurance_Type;
