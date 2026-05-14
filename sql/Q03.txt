@@ -1,0 +1,1 @@
+SELECT first_name, last_name, SUM(hospitilization_cost) FROM Patient p JOIN Hospitalization h on p.AMKA = h.AMKA WHERE 
