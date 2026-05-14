@@ -262,7 +262,7 @@ DROP TABLE IF EXISTS Operation_info;
 CREATE TABLE IF NOT EXISTS Operation_info(
   id INT NOT NULL AUTO_INCREMENT,
   operation_code VARCHAR(45) NOT NULL UNIQUE,
-  operation_name VARCHAR(255) NOT NULL,
+  operation_name TEXT NOT NULL,
   category VARCHAR(255) NOT NULL,
   expected_duration INT NOT NULL, 
   cost DECIMAL(10,2) NOT NULL,
