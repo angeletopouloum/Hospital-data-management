@@ -1,0 +1,11 @@
+SELECT COUNT(staff_AMKA), department_code, WEEK(start_date)
+FROM Staff st
+JOIN Doctor d
+ON st.AMKA = d.AMKA
+JOIN Nurse n
+ON st.AMKA = n.AMKA
+JOIN Administrative_Staff ads
+ON st.AMKA = ads.AMKA
+JOIN Shifts sh
+JOIN On_Duty od
+ON sh.shift_id = od.shift_id 
