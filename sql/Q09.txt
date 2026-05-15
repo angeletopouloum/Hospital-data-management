@@ -1,0 +1,6 @@
+SELECT GROUP_CONCAT(AMKA) AS PATIENTS,
+    TIMESTAMPDIFF(DAY, admission_date, discharge_date) AS days_stayed,
+    YEAR(admission_date) AS admission_year
+FROM Hospitalization
+WHERE TIMESTAMPDIFF(DAY, admission_date, discharge_date) > 15 
+GROUP BY days_stayed, admission_year;
