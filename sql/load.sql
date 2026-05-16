@@ -1,4 +1,3 @@
-
 -- INSERTS FOR DEPARTMENT
 INSERT INTO Department (department_code, name, description, number_of_beds, building_floor, building, department_head_AMKA) 
 VALUES (66, 'Emergency department', 'Specializes in emergency medical care', 250, 3, 'Emergency department Building', NULL);
@@ -30,3 +29,21 @@ INSERT INTO Department (department_code, name, description, number_of_beds, buil
 VALUES (1, 'Pathology', 'Specializes in pathology care', 250, 1, 'Pathology Building', NULL);
 INSERT INTO Department (department_code, name, description, number_of_beds, building_floor, building, department_head_AMKA) 
 VALUES (58, 'Ophthalmology', 'Specializes in ophthalmology care', 250, 2, 'Ophthalmology Building', NULL);
+
+
+-- INSERTS FOR OPERATION ROOM
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('101', 'Χειρουργείο');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('102', 'Χειρουργείο');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('103', 'Χειρουργείο');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('104', 'Χειρουργείο');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('105', 'Χειρουργείο');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('201','Αίθουσα Επεμβάσεων');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('202','Αίθουσα Επεμβάσεων');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('203','Αίθουσα Επεμβάσεων');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('204','Αίθουσα Επεμβάσεων');
+INSERT INTO Operation_room (room_number, room_type)  VALUES ('205','Αίθουσα Επεμβάσεων');
+
+-- INSERTS FOR BEDS (USING PYTHON SCRIPT)
+
+
+
