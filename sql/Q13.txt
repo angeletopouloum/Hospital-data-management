@@ -1,10 +1,17 @@
 WITH RECURSIVE supervision_hierarchy AS(
-    SELECT AMKA, supervisor_AMKA
+    SELECT
+    AMKA AS root_AMKA,
+    AMKA,
+    supervisor_AMKA,
+    0 AS level
     FROM Doctor
-    WHERE AMKA = [GIVEN_AMKA]
     UNION
-    SELECT d.AMKA, d.supervisor_AMKA
+    SELECT s.root_AMKA,
+    d.AMKA,
+    d.supervisor_AMKA,
+    s.level + 1
     FROM Doctor AS d, supervision_hierarchy AS s
     WHERE d.AMKA = s.supervisor_AMKA
 )
-SELECT * FROM supervision_hierarchy;
+SELECT * FROM supervision_hierarchy
+ORDER BY origin_AMKA, level;
