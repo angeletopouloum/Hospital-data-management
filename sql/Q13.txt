@@ -1,0 +1,10 @@
+WITH RECURSIVE supervision_hierarchy AS(
+    SELECT AMKA, supervisor_AMKA
+    FROM Doctor
+    WHERE AMKA = [GIVEN_AMKA]
+    UNION
+    SELECT d.AMKA, d.supervisor_AMKA
+    FROM Doctor AS d, supervision_hierarchy AS s
+    WHERE d.AMKA = s.supervisor_AMKA
+)
+SELECT * FROM supervision_hierarchy;
