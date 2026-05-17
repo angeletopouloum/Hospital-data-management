@@ -1,1 +1,13 @@
-SELECT p.first_name, p.last_name, SUM(h.hospitilization_cost), COUNT(*) AS patient_count FROM Patient p JOIN Hospitalization h on p.AMKA = h.AMKA GROUP BY p.first_name, p.last_name, h.department_code HAVING patient_count > 3;
+SELECT
+p.first_name,
+p.last_name,
+SUM(h.hospitilization_cost), 
+COUNT(*) AS patient_count 
+FROM Patient AS p 
+JOIN Hospitalization AS h 
+    ON p.AMKA = h.AMKA 
+GROUP BY
+p.first_name,
+p.last_name,
+h.department_code 
+HAVING patient_count > 3;
