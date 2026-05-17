@@ -20,4 +20,16 @@ JOIN Hospital_Evaluation AS he
     ON h.hospitalization_id = he.hospitalization_id
 WHERE AMKA = [GIVEN_AMKA]
 GROUP BY
-h.hospitalization_id;
+h.hospitalization_id,
+h.AMKA,
+h.department_code,
+h.bed_id_number,
+h.admission_date,
+h.discharge_date,
+h.KEN_id,
+h.admission_diagnosis_ICD,
+h.discharge_diagnosis_ICD,
+h.admission_diagnosis_description,
+h.discharge_diagnosis_description,
+h.hospitalization_cost,
+d.code_icd10;
