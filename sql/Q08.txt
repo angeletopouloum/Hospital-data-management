@@ -1,1 +1,7 @@
-SELECT st.AMKA FROM Staff st LEFT JOIN Shifts sh ON st.AMKA = sh.staff_AMKA AND sh.start_time = [GIVEN_TIME] AND sh.start_date = [GIVEN_DATE] LEFT JOIN On_Duty od ON sh.shift_id = od.shift_id AND od.department_code = [GIVEN_DEPARTMENT] WHERE sh.shift_id IS NULL;
+SELECT st.AMKA
+FROM Staff AS st
+LEFT JOIN Shifts AS sh
+    ON st.AMKA = sh.staff_AMKA AND sh.start_time = [GIVEN_TIME] AND sh.start_date = [GIVEN_DATE]
+LEFT JOIN On_Duty AS od 
+    ON sh.shift_id = od.shift_id AND od.department_code = [GIVEN_DEPARTMENT] 
+WHERE sh.shift_id IS NULL;

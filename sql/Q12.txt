@@ -1,10 +1,21 @@
-SELECT COUNT(sh.staff_AMKA), sh.department_code, sh.shift_type, d.specialty, n.rank, adms.role
-FROM Shifts sh
-LEFT JOIN Doctor d
-ON sh.staff_AMKA = d.AMKA
-LEFT JOIN Nurse n
-ON sh.staff_AMKA = n.AMKA
-LEFT JOIN Administrative_Staff adms
-ON sh.staff_AMKA = adms.AMKA
+SELECT 
+COUNT(sh.staff_AMKA),
+sh.department_code,
+sh.shift_type,
+d.specialty,
+n.rank,
+adms.role
+FROM Shifts AS sh
+LEFT JOIN Doctor AS d
+    ON sh.staff_AMKA = d.AMKA
+LEFT JOIN Nurse AS n
+    ON sh.staff_AMKA = n.AMKA
+LEFT JOIN Administrative_Staff AS adms
+    ON sh.staff_AMKA = adms.AMKA
 WHERE WEEK(start_date, 3) = [GIVEN_WEEK] AND sh.shift_status = 'Scheduled'
-GROUP BY sh.department_code, sh.shift_type, d.specialty, n.rank, adms.role;
+GROUP BY
+sh.department_code,
+sh.shift_type,
+d.specialty,
+n.rank,
+adms.role;
