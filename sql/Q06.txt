@@ -12,12 +12,15 @@ h.admission_diagnosis_description,
 h.discharge_diagnosis_description,
 h.hospitalization_cost,
 d.code_icd10,
-AVG(he.overall_experience)
+(he.nurse_quality+he.cleanliness+he.food_quality+he.overall_experience)/4 AS hosp_avg_rating,
+de.quality_of_care
 FROM Hospitalization AS h
 JOIN Diagnoses AS d
     ON h.admission_diagnosis_ICD = d.code_icd10
 JOIN Hospital_Evaluation AS he
     ON h.hospitalization_id = he.hospitalization_id
+JOIN  Doctor_Evaluation AS de
+    ON h.hospitalization_id = de.hospitalization_id
 WHERE AMKA = [GIVEN_AMKA]
 GROUP BY
 h.hospitalization_id,
@@ -32,4 +35,6 @@ h.discharge_diagnosis_ICD,
 h.admission_diagnosis_description,
 h.discharge_diagnosis_description,
 h.hospitalization_cost,
-d.code_icd10;
+d.code_icd10,
+hosp_avg_rating,
+de.quality_of_care;
