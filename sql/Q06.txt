@@ -1,3 +1,5 @@
+USE 'HospitalManagement';
+
 SELECT
 h.hospitalization_id,
 h.AMKA,

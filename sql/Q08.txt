@@ -1,3 +1,5 @@
+USE 'HospitalManagement';
+
 SELECT st.AMKA
 FROM Staff AS st
 LEFT JOIN Shifts AS sh

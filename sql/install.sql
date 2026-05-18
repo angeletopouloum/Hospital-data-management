@@ -399,6 +399,25 @@ CREATE INDEX idx_cost_calculation_covering ON Cost_Calculation(KEN, base_cost);
 -- Indices for query #3
 CREATE INDEX idx_patient_AMKA_first_last_name ON Patient(AMKA, first_name, last_name);
 
+-- Indices for query #6
+CREATE INDEX idx_hospitalization_query6 ON Hospitalization(admission_diagnosis_ICD, hospitalization_id, AMKA, department_code, bed_id_number, admission_date, discharge_date, KEN_id, admission_diagnosis_ICD, discharge_diagnosis_ICD, admission_diagnosis_desciption, discharge_diagnosis_description, hospitalization_cost);
+CREATE INDEX idx_hospital_evaluation_covering ON Hospital_Evaluation(hospitalization_id, nurse_quality, cleanliness, food_quality, overall_experience);
+CREATE INDEX idx_doctor_evaluation_hosp_id_quality_of_care ON Doctor_Evaluation(hospitalization_id, quality_of_care);
+
+-- Indices for query #8
+CREATE INDEX idx_shifts_covering ON Shifts(staff_AMKA, start_time, start_date, shift_id);
+CREATE INDEX idx_on_duty_shift_id_dep_code ON On_Duty(shift_id, department_code);
+
+-- Indices for query #9 covered by query #1 (idx_hospitalization_covering)
+
+-- Indices for query #12
+CREATE INDEX idx_shifts_covering_query12 ON Shifts(staff_AMKA, shift_status, department_code, shift_type);
+CREATE INDEX idx_doctor_AMKA_specialty ON Doctor(AMKA, specialty);
+CREATE INDEX idx_nurse_AMKA_rank ON Nurse(AMKA, rank);
+CREATE INDEX idx_adminstrative_staff_AKMA_role ON Administrative_Staff(AMKA, role);
+
+-- Indices for query #13
+CREATE INDEX idx_doctor_AMKA_supervisor_AMKA ON Doctor(AMKA, supervisor_AMKA);
 
 DROP TRIGGER IF EXISTS is_doctor_ins;
 DROP TRIGGER IF EXISTS is_doctor_upd;

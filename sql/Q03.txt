@@ -1,3 +1,5 @@
+USE HospitalManagement;
+
 SELECT
 p.first_name,
 p.last_name,

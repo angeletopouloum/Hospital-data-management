@@ -1,3 +1,5 @@
+USE 'HospitalManagement';
+
 SELECT 
 GROUP_CONCAT(AMKA) AS PATIENTS,
 DATEDIFF(admission_date, discharge_date) AS days_stayed,

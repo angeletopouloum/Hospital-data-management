@@ -1,3 +1,5 @@
+USE HospitalManagement;
+
 SELECT
 SUM(c.base_cost),
 COUNT(h.hospitalization_id)

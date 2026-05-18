@@ -1,3 +1,5 @@
+USE 'HospitalManagement';
+
 WITH RECURSIVE supervision_hierarchy AS(
     SELECT
     AMKA AS root_AMKA,
@@ -14,4 +16,4 @@ WITH RECURSIVE supervision_hierarchy AS(
     WHERE d.AMKA = s.supervisor_AMKA
 )
 SELECT * FROM supervision_hierarchy
-ORDER BY origin_AMKA, level;
+ORDER BY root_AMKA, level;
