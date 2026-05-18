@@ -1,10 +1,10 @@
 SELECT
 p.first_name,
 p.last_name,
-SUM(h.hospitilization_cost), 
+SUM(h.hospitalization_cost), 
 COUNT(*) AS patient_count 
-FROM Patient AS p 
-JOIN Hospitalization AS h 
+FROM Patient AS p
+JOIN Hospitalization AS h
     ON p.AMKA = h.AMKA 
 GROUP BY
 p.first_name,

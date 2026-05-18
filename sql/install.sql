@@ -391,6 +391,15 @@ CREATE TABLE IF NOT EXISTS Prescription (
     CHECK(starting_date < end_date)
 );
 
+-- Indices for query #1
+CREATE INDEX idx_hospitalization_covering ON Hospitalization(KEN_id, AMKA, department_code, discharge_date, hospitalization_id, hospitalization_cost);
+CREATE INDEX idx_insurance_type_covering ON Insurance_Type(patient_AMKA, insurance_provider);
+CREATE INDEX idx_cost_calculation_covering ON Cost_Calculation(KEN, base_cost);
+
+-- Indices for query #3
+CREATE INDEX idx_patient_AMKA_first_last_name ON Patient(AMKA, first_name, last_name);
+
+
 DROP TRIGGER IF EXISTS is_doctor_ins;
 DROP TRIGGER IF EXISTS is_doctor_upd;
 DROP TRIGGER IF EXISTS check_department_head_ins;
