@@ -29,4 +29,6 @@ PROJECT ASSUMPTIONS
 15) Certain KEN codes in the given file, either appeared as duplicate or had errors. To accomondate this, we cross-checked the erroneous 
     codes using the source: https://www.moh.gov.gr/articles/health/domes-kai-draseis-gia-thn-ygeia/kwdikopoihseis/kleista-enopoihmena-noshlia/713-kwdikopoihseis?fdl=3300
     from the Greek Ministry of Health.
-16) Payment for a patient's hospitalization is deposited upon being         discharged.
+16) Payment for a patient's hospitalization is deposited upon being discharged.
+17) According to ν.3418/2005 (άρθρο 14 παρ. 4), hospitals must retain patient files for twenty (20) years after the patient's latest visit. Therefore, patient deletions
+    are not allowed until atleast twenty years have passed since their original admission. 

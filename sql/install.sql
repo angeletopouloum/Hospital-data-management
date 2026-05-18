@@ -391,6 +391,7 @@ CREATE TABLE IF NOT EXISTS Prescription (
     CHECK(starting_date < end_date)
 );
 
+
 -- Indices for query #1
 CREATE INDEX idx_hospitalization_covering ON Hospitalization(KEN_id, AMKA, department_code, discharge_date, hospitalization_id, hospitalization_cost);
 CREATE INDEX idx_insurance_type_covering ON Insurance_Type(patient_AMKA, insurance_provider);
@@ -466,6 +467,7 @@ DROP TRIGGER IF EXISTS check_operation_category_ins;
 DROP TRIGGER IF EXISTS check_operation_category_upd;
 DROP TRIGGER IF EXISTS check_lab_work_category_ins;
 DROP TRIGGER IF EXISTS check_lab_work_category_upd;
+DROP TRIGGER IF EXISTS chk_patient_del;
 
 DELIMITER $$
 
@@ -609,6 +611,24 @@ BEGIN
     UPDATE Department
     SET number_of_beds = number_of_beds - 1
     WHERE department_code = old.department_code;
+END$$
+
+CREATE TRIGGER chk_patient_del BEFORE DELETE ON Patient
+FOR EACH ROW
+BEGIN
+    DECLARE latest_visit DATE;
+
+    SELECT admission_date INTO latest_visit
+    FROM Patient AS p
+    JOIN Hospitalization AS h
+    ON p.AMKA = h.AMKA
+    ORDER BY admission_date
+    DESC LIMIT 1;
+
+    IF DATEDIFF(latest_visit, CURDATE()) < 7305 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TXT = 'Cannot delete patient records for atleast twenty (20) years after their latest admission, as per ν.3418/2005 (άρθρο 14 παρ. 4)';
+    END IF;
 END$$
 
 CREATE TRIGGER check_hospitalization_dates_ins BEFORE INSERT ON Hospitalization
